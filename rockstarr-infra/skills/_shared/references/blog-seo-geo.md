@@ -1,10 +1,11 @@
 ---
 title: "Blog SEO + GEO reference"
 purpose: "Canonical SEO and GEO (Generative Engine Optimization) standard for Rockstarr researched-blog content. Defines what makes a blog rank on Google AND get cited by AI search systems (ChatGPT, Perplexity, Google AI Overviews)."
-applies_to: "researched blog lane only — informational pieces drafted via outline-blog → draft-blog. NOT applied to thought leadership (different lane, different rubric), newsletters, case studies, or repurposed derivatives."
+applies_to: "TWO consumers. (1) The researched blog lane — informational pieces drafted via outline-blog → draft-blog — uses the SEO/GEO drafting patterns and the quality checklist. NOT applied to thought leadership (different lane, different rubric), newsletters, case studies, or repurposed derivatives. (2) The seo-site-audit skill reads the 'GEO audit checklist' section at the bottom for its site-wide diagnostic GEO phase. The drafting patterns are author-facing; the audit checklist is diagnostic-facing — same canonical source, two uses."
 read_by:
   - "rockstarr-content/outline-blog (research phase, FAQ outline, keyword plan, internal linking plan, meta drafts)"
   - "rockstarr-content/draft-blog (FAQ in body, keyword density, direct-answer pattern, structured definitions, inline sources, quality checklist)"
+  - "rockstarr-content/seo-site-audit (GEO audit checklist section — Phase 7 site-wide AI-search visibility diagnosis)"
 do_not_fork: true
 ---
 
@@ -270,6 +271,82 @@ didn't capture enough research or didn't plan for the FAQ.
 Surface to the user and recommend re-running the outline rather
 than burning compute on a regeneration that will hit the same
 wall.
+
+## GEO audit checklist (read by seo-site-audit)
+
+The sections above are **author-facing** — they shape a single blog
+post as it's drafted. This section is **diagnostic-facing**: it's the
+site-wide checklist `rockstarr-content:seo-site-audit` runs in its
+Phase 7 (AI search visibility / GEO) against an existing site. Same
+canonical patterns, applied as an audit rather than a writing guide.
+
+AI search engines (ChatGPT, Perplexity, Google AI Overviews, Claude
+search) rank and cite content differently than traditional Google.
+Traditional SEO ranks pages; AI search **lifts excerpts**. A site can
+rank #1 in Google and never get cited in an AI answer.
+
+### Schema markup (site-wide)
+
+- `FAQPage` on every page with 3+ Q&A pairs. The single biggest miss.
+- `HowTo` on step-by-step content.
+- `Article` with a proper author Person on every blog post.
+- Author Person has `honorificSuffix` for earned credentials.
+- Author Person has `sameAs` linking to LinkedIn / professional
+  profiles.
+
+### Content structure (site-wide)
+
+- Direct-answer-first paragraphs — lead with the answer, then explain.
+- Structured definitions when introducing concepts.
+- TL;DR sections at the top of long pieces — AI engines often cite
+  from these.
+- Clear heading hierarchy mirroring the content's logical flow.
+- Bulleted lists for enumerable content (steps, requirements,
+  options).
+
+### Authority + currency signals (site-wide)
+
+- Named sources, not "studies show".
+- Specific numbers with units.
+- Year framings; avoid undated content ("As of 2026", "Updated
+  [date]").
+- Author bylines on every content page with a linked profile.
+- External authoritative outbound links (.gov, .edu, industry-
+  standard).
+- Sitemap `lastmod` actually reflects content changes.
+- No stale year-in-title content still indexed.
+
+### The AI-prompt citation tests
+
+After shipping GEO changes, run these prompts against ChatGPT,
+Perplexity, and Google AI Overviews and record whether the client's
+site is cited:
+
+1. **Direct prompt:** "What is [client name]?"
+2. **Topic prompt:** "Who are the best [industry] firms in [city]?"
+3. **Specific question:** a question the client's FAQ section answers.
+
+These converge slowly (AI indexes update on different cadences), but
+tracking them round-over-round shows whether the GEO work is paying
+off.
+
+### Common GEO mistakes (audit red flags)
+
+1. No FAQ structure — the single biggest miss.
+2. Generic claims with no named sources.
+3. Marketing fluff over substance — AI engines downgrade promotional
+   content.
+4. Author = "rachel" or "admin" — a WordPress account name leaking
+   into author schema, mapping to nobody.
+5. No currency markers — undated content gets downgraded.
+6. Burying the answer instead of leading with it.
+7. Auto-generated FAQ — AI-detected boilerplate gets filtered; real
+   human-written Q&A wins.
+
+When `seo-site-audit` finds a content-actionable GEO gap (a missing
+FAQ section, missing currency markers on a live post), it tags that
+finding `work_type: expand` so it flows into `seo-strategy`'s backlog
+like any other content finding.
 
 ## What this reference does NOT do
 

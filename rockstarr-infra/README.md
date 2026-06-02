@@ -307,8 +307,12 @@ that's what we're here for.
   phase, FAQ outline, keyword and internal-linking plans, meta
   drafts) and `rockstarr-content:draft-blog` (FAQ in body,
   inline sources, keyword density, direct-answer pattern,
-  structured definitions, the quality checklist gate). Do not
-  fork — update in place.
+  structured definitions, the quality checklist gate). **As of
+  0.10.0 it also carries a "GEO audit checklist" section read by
+  `rockstarr-content:seo-site-audit` for its site-wide GEO
+  diagnosis** — the drafting patterns are author-facing, the
+  audit checklist is diagnostic-facing, one canonical source.
+  Do not fork — update in place.
 - `skills/_shared/stop-slop/` — MIT-licensed stop-slop skill. Every
   prose-producing Rockstarr bot must run this as the final pass before
   writing a draft to `03_drafts/`. Shared SKILL.md + `references/`
@@ -423,6 +427,25 @@ that's what we're here for.
   - Pure additive change. No skill behavior in this plugin
     changes; the only delta is the new file under
     `skills/_shared/references/`.
+- `0.10.0` — GEO audit checklist added to the shared SEO/GEO
+  reference.
+  - **`skills/_shared/references/blog-seo-geo.md` gains a "GEO
+    audit checklist" section** — the site-wide, diagnostic
+    counterpart to the existing author-facing drafting patterns
+    (site-wide FAQ-schema coverage, author-entity leaks, currency
+    markers, TL;DR-at-top, the AI-prompt citation tests, common
+    GEO audit red flags). Its `applies_to` and `read_by`
+    front-matter broaden to name the new consumer.
+  - **New consumer: `rockstarr-content:seo-site-audit`** (new in
+    rockstarr-content 0.8.0) reads this section for its Phase 7
+    GEO diagnosis instead of forking a competing checklist. The
+    drafting consumers (`outline-blog`, `draft-blog`) are
+    unaffected — their patterns and the 13-item checklist are
+    unchanged.
+  - Pure additive change. No existing skill behavior changes; the
+    delta is one new section plus broadened front-matter in an
+    existing shared reference. Single source of truth — do not
+    fork.
 
 ## Backlog / future
 
