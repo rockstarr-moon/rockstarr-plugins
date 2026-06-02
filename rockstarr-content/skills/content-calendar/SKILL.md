@@ -1,6 +1,6 @@
 ---
 name: content-calendar
-description: "This skill should be used when the user asks to \"build the content calendar\", \"plan the month\", \"schedule this month's content\", \"assign dates to the picked topics\", or \"run the calendar\". Reads the picked angles from the month's content-topics file plus the stack-cadence fields and publish log, assigns dates across the month (blog outlines first because of the outline gate, thought-leadership next, newsletters anchored to a chosen weekday, LinkedIn newsletters aligned to an approved TL piece), and writes one monthly calendar file to 02_inputs/content-calendar_YYYY-MM.md. One approval gate for the whole month."
+description: "This skill should be used when the user asks to \"build the content calendar\", \"plan the month\", \"schedule this month's content\", or \"assign dates to the picked topics\". Reads the month's picked angles from content-topics, stack-cadence fields, and publish log, then assigns dates across the month (blog outlines first because of the outline gate, TL next, newsletters anchored to a chosen weekday, LinkedIn newsletters aligned to an approved TL piece). Writes one monthly calendar to 02_inputs/content-calendar_YYYY-MM.md. One approval gate for the whole month."
 ---
 
 # content-calendar
@@ -97,10 +97,15 @@ Slot order matters. Apply these in order:
      apart and stagger with blog publish dates so the client
      does not publish two long-form pieces on the same day.
 3. **LinkedIn newsletter slots.** Each LinkedIn newsletter aligns
-   to one approved TL piece from this month (or a prior month if
-   the client is ramping). If `linkedin_newsletters_per_month >
-   thought_leadership_per_month`, flag the gap — there aren't
-   enough TL pieces to feed the cadence.
+   to one TL piece flagged `LinkedIn newsletter: true` in the
+   topics file (or a prior-month TL piece if the client is
+   ramping). Record the slot with its publish date AND the source
+   TL slug — `publish-linkedin-newsletter` reads both. Schedule
+   the LinkedIn-newsletter publish date AFTER the source TL
+   piece's own publish date (republish follows the original). If
+   `linkedin_newsletters_per_month > thought_leadership_per_month`,
+   flag the gap — there aren't enough TL pieces to feed the
+   cadence.
 4. **Email newsletter slots last.** Anchor to a preferred weekday
    (default Tuesday if not set in stack.md). Space sends evenly
    across the month to hit `email_newsletters_per_month`. The
@@ -234,7 +239,9 @@ After writing the file:
 4. Once the calendar is approved, per-piece drafting runs on the
    calendar dates (outline-blog, draft-blog, draft-thought-
    leadership, draft-newsletter). LinkedIn-newsletter publishes
-   require `publish-linkedin-newsletter` (DEFER in v0.2).
+   run via `publish-linkedin-newsletter` against the approved
+   source TL piece; `verify-linkedin-newsletter` confirms the
+   edition went live afterward.
 
 ## What NOT to do
 

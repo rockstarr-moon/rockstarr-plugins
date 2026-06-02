@@ -7,14 +7,18 @@ case studies and repurposed derivatives. Sits on top of
 `approve` / `publish-log` lifecycle.
 
 This is the second plugin in the Rockstarr AI Growth Operating
-System. It does not post, send, or schedule — those are jobs for
-`rockstarr-social`, `rockstarr-outreach-bot-<variant>`, and the
-email side of the stack. This plugin drafts long-form content
-only. Short-form formats — including LinkedIn polls — live in
-the `rockstarr-social` plugin. Publish connectors
-(`publish-wp`, `publish-ga`, `publish-linkedin-newsletter`) are
-deferred until a signed client's stack lights up the matching
-field.
+System. It primarily drafts long-form content; posting and
+scheduling are mostly jobs for `rockstarr-social`,
+`rockstarr-outreach-bot-<variant>`, and the email side of the
+stack. Short-form formats — including LinkedIn polls — live in
+the `rockstarr-social` plugin. The one publish connector that
+lives here is the LinkedIn newsletter (as of v0.9,
+`publish-linkedin-newsletter` + `verify-linkedin-newsletter`):
+it republishes an approved thought-leadership piece as a LinkedIn
+newsletter edition via Chrome MCP, because that surface has no API
+path. The other publish connectors (`publish-wp`, `publish-ga`)
+remain deferred until a signed client's stack lights up the
+matching field.
 
 ## At a glance
 
@@ -52,6 +56,76 @@ field.
   `content-calendar`, and `outline-blog` are all backlog-aware
   — strategy decides which topics matter; the monthly skills
   sequence them.
+## v0.9 — LinkedIn newsletter go-live
+
+The LinkedIn-newsletter lane stopped being a plan and became a
+publish path. It was the deferred `publish-linkedin-newsletter`
+slot; v0.9 realizes it (plus a go-live check).
+
+- **New skill: `publish-linkedin-newsletter`.** Republishes an
+  approved thought-leadership piece as a LinkedIn newsletter
+  edition on the author's personal account, via Chrome MCP. The
+  first realized member of the deferred-`publish-*` class — the
+  LinkedIn newsletter surface has no API path that reproduces the
+  editor's newsletter target + scheduling. Carries a hard-won
+  gotcha catalog (`references/linkedin-article-formatting.md`) and
+  keeps humans in the loop for the cover image, the intro post,
+  and the final Schedule click. Gated on
+  `linkedin_newsletters_per_month >= 1`. Records via
+  `rockstarr-infra:publish-log`.
+- **New skill: `verify-linkedin-newsletter`.** Confirms a
+  scheduled edition actually went live on/near its expected date
+  and reports the result. Adapted from an internal go-live
+  process to the client-folder contract (no ClickUp).
+- **The TL → LinkedIn-newsletter chain is wired end to end.**
+  `ideate-topics` flags a TL angle `LinkedIn newsletter: true`;
+  `content-calendar` adds a LinkedIn-newsletter slot keyed to the
+  source TL slug + a post-original publish date;
+  `draft-thought-leadership` carries
+  `linkedin_newsletter_eligible` in the approved piece's
+  front-matter; `publish-linkedin-newsletter` reads the slot + the
+  approved piece and republishes.
+- **Personal-account by design.** LinkedIn newsletters live on a
+  person's profile, and one workspace may have several people each
+  running their own. So account identity, newsletter name, and
+  schedule are confirmed with the operator at run time, NOT baked
+  into the single client `stack.md` (only the cadence gate lives
+  there). Every run confirms the signed-in session before posting.
+
+## v0.8 — SEO site audit feeds strategy
+
+The SEO layer gained a diagnostic front end. `seo-strategy`
+used to plan content from a shallow homepage fetch and the
+publish log alone — it knew what to write next but nothing about
+the *state* of what already shipped.
+
+- **New skill: `seo-site-audit`.** An impact-first, schema- and
+  AI-search-aware audit of the client's existing site. Twelve
+  phases (indexability → on-page → schema → local → content /
+  topical authority → GEO → Core Web Vitals → backlinks →
+  prioritize → deliver), four bundled Python scripts (the first
+  scripts shipped by any skill in the monorepo; packaging
+  handles them automatically), max 3 Critical items. Writes
+  `02_inputs/seo/audit_<date>.md` + canonical `audit_state.md`.
+  This is a deliberate, SEO-lane-only stretch of the plugin's
+  "no external services" posture — see CLAUDE.md.
+- **`seo-strategy` is audit-aware.** When a recent audit exists,
+  it folds the audit's content findings into the backlog as
+  `work_type: refresh | consolidate | expand` items alongside
+  net-new (`new`) topics, and grounds the gap analysis in the
+  site's real topical coverage. Fix-existing items get their own
+  suffixed slug + an `existing_url` so `ideate-topics`'
+  publish-log dedup doesn't silently drop them. The audit is
+  optional — strategy still runs without one.
+- **`ideate-topics` carries `work_type` + `existing_url`** so
+  audit-sourced refresh/expand items thread through to
+  `outline-blog`.
+- **GEO is one canonical reference.** The audit's GEO checks read
+  the shared `rockstarr-infra/skills/_shared/references/blog-seo-geo.md`
+  (which gained a "GEO audit checklist" section in
+  rockstarr-infra 0.10.0) rather than forking a competing
+  checklist.
+
 ## v0.7 — LinkedIn polls moved to rockstarr-social
 
 The polls lane added in v0.6 was the first explicitly
@@ -203,9 +277,9 @@ drafts generated.
 | Lane | Primary skill | Cadence field | Repurpose path |
 |------|---------------|---------------|----------------|
 | Researched blog | `outline-blog` (research + FAQ + keyword + linking plan) → `draft-blog` (FAQ body + inline sources + 13-item checklist) | `blogs_per_month` | Referenced from newsletters; optional `repurpose` to LinkedIn post. |
-| Thought leadership | `outline-thought-leadership` → `draft-thought-leadership` | `thought_leadership_per_month` | Source for LinkedIn newsletters (via `publish-linkedin-newsletter`, DEFER); referenced from newsletters; optional `repurpose`. |
+| Thought leadership | `outline-thought-leadership` → `draft-thought-leadership` | `thought_leadership_per_month` | Source for LinkedIn newsletters (via `publish-linkedin-newsletter`); referenced from newsletters; optional `repurpose`. |
 | Email newsletter | `draft-newsletter` | `email_newsletters_per_month` | Links to the month's blog + TL pieces. Not repurposed back. |
-| LinkedIn newsletter | `publish-linkedin-newsletter` (DEFER) | `linkedin_newsletters_per_month` | Reuse of an approved TL piece. Not a new draft. |
+| LinkedIn newsletter | `publish-linkedin-newsletter` → `verify-linkedin-newsletter` | `linkedin_newsletters_per_month` | Reuse of an approved TL piece. Not a new draft. Republished on LinkedIn via Chrome MCP, then verified live. |
 | Case study | `draft-case-study` | `case_studies_per_quarter` | On-demand (quarterly reminder), outside the monthly calendar. |
 | Derivatives | `repurpose` | n/a — source-gated on approved blog/TL | Video-script output gated on `records_videos`. |
 
@@ -213,8 +287,9 @@ drafts generated.
 
 | Skill | Status | Purpose |
 |-------|--------|---------|
-| `seo-strategy` | NEW (0.5) | Run on demand (typically quarterly). Six-phase keyword research + topic clustering workflow. Reads `client-profile.md`, `stack.md`, and the publish log; runs WebFetch on the client site and WebSearch on the keyword landscape; generates 30 seed keywords + 50 long-tail variants + 8-12 quick wins; identifies 5 competitor gaps; builds 4-5 topic clusters with one pillar page + 4-6 supports each. Outputs: `02_inputs/seo/strategy_<YYYY-MM-DD>.md` (audit-preserved) and `02_inputs/seo/backlog.md` (canonical, regenerated per run). 25-32 prioritized blog topics ready for `ideate-topics` to draw from monthly. |
-| `ideate-topics` | UPDATED (0.5) | Monthly. Reads profile, style guide, first-party KB, publish log, stack-cadence. **As of v0.5, also reads `02_inputs/seo/backlog.md` if it exists and prefers backlog items for the blog lane.** Each TL angle still carries an `enemy` field with diversity check; backlog-sourced blog angles carry slug + cluster + cluster role + parent pillar + target keyword + search intent + difficulty + quick-win flag. Surfaces a low-backlog warning when fewer than 2× monthly cadence remains. Output: `02_inputs/content-topics_YYYY-MM.md`. |
+| `seo-site-audit` | NEW (0.8) | Run on demand (onboarding + quarterly), before `seo-strategy`. Impact-first audit of the client's *existing* site: indexability, on-page, structured data (schema), local SEO, content/topical authority, GEO/AI-search visibility, Core Web Vitals. Fetches the live site with a Googlebot UA and parses cached HTML via four bundled Python scripts. Produces a prioritized findings doc `02_inputs/seo/audit_<YYYY-MM-DD>.md` (max 3 Critical) + a canonical `audit_state.md` punch-list for recurring rounds. Content-side findings are tagged `work_type: refresh/consolidate/expand/new` and consumed by `seo-strategy`. GEO checks read the canonical `blog-seo-geo.md`; dev/technical findings are a developer hand-off. Prose sections run stop-slop. |
+| `seo-strategy` | UPDATED (0.8) | Run on demand (typically quarterly). Six-phase keyword research + topic clustering workflow. Reads `client-profile.md`, `stack.md`, and the publish log; runs WebFetch on the client site and WebSearch on the keyword landscape; generates 30 seed keywords + 50 long-tail variants + 8-12 quick wins; identifies 5 competitor gaps; builds 4-5 topic clusters with one pillar page + 4-6 supports each. **As of v0.8, reads the newest `02_inputs/seo/audit_*.md` when present and folds its `refresh`/`consolidate`/`expand` content findings into the backlog alongside net-new (`new`) topics; fix-existing items get suffixed slugs + an `existing_url`.** Outputs: `02_inputs/seo/strategy_<YYYY-MM-DD>.md` (audit-preserved) and `02_inputs/seo/backlog.md` (canonical, regenerated per run). |
+| `ideate-topics` | UPDATED (0.8) | Monthly. Reads profile, style guide, first-party KB, publish log, stack-cadence. Reads `02_inputs/seo/backlog.md` if it exists and prefers backlog items for the blog lane. Each TL angle carries an `enemy` field with diversity check; backlog-sourced blog angles carry slug + cluster + cluster role + parent pillar + target keyword + search intent + difficulty + quick-win flag. **As of v0.8, also carries `work_type` + `existing_url` so audit-sourced refresh/expand items thread through to `outline-blog`.** Surfaces a low-backlog warning when fewer than 2× monthly cadence remains. Output: `02_inputs/content-topics_YYYY-MM.md`. |
 | `content-calendar` | UPDATED (0.5) | Monthly. Slots the user's picks across the month. Blog and TL outline-to-publish paths first (both lanes are outline-first); newsletters anchored to preferred weekday; LinkedIn newsletters aligned to an approved TL. **As of v0.5, enforces cluster-aware ordering for backlog-sourced picks: pillar pages calendar before their supporting posts within the same cluster, and cross-month dependencies are flagged in the calendar's notes.** Output: `02_inputs/content-calendar_YYYY-MM.md`. |
 | `outline-blog` | UPDATED (0.5) | Outline-first gate for the researched blog lane. Runs a WebSearch research phase on top of the first-party KB read, requires an FAQ section (3-5 questions) in the outline, produces a keyword placement plan, internal linking plan, external sources table, and meta title + description drafts. **As of v0.5, defaults the internal linking plan to cluster-aware patterns when the topic comes from the SEO backlog**: supporting posts link to their parent pillar + 1-2 peer supports; pillar pages link out to one supporting post per H2 section. Reads the shared blog-seo-geo reference. Approval required before `draft-blog` runs. |
 | `outline-thought-leadership` | EXISTING (0.3) | Outline-first gate for the thought-leadership lane. Forces five required fields — thesis, smart-competitor counter-argument, opening scene, quotable line, buried proprietary term — applied from the canonical TL rubric. Approval required before `draft-thought-leadership` runs. |
@@ -225,9 +300,10 @@ drafts generated.
 | `repurpose` | EXISTING | Takes one approved long-form piece and fans it into LinkedIn post, newsletter highlight, X/Threads thread, and (only when `records_videos=true`) a short video script. Mandatory stop-slop pass per derivative. |
 | `draft-polls` | MOVED OUT (0.7) | Introduced in v0.6, moved to the new `rockstarr-social` plugin in v0.7 where it fits alongside other short-form social content. Polls cadence (`polls_cadence` enum), brand hashtag, and persona-list config still live in `stack.md` and `style-guide.md` § Channel Adaptation → LinkedIn polls — those workspace conventions are unchanged; only the implementing skill moved plugins. |
 | `draft-article` | REMOVED (0.5) | Deprecated v0.2 shim deleted on schedule. Any saved workflow still referencing `draft-article` returns a "not found" error and routes the user to `outline-blog` or `outline-thought-leadership` directly. |
+| `publish-linkedin-newsletter` | NEW (0.9) | Republishes an approved TL piece from `04_approved/content/` as a LinkedIn newsletter edition on the author's personal account, via Chrome MCP automation of the article editor. Gated on `linkedin_newsletters_per_month >= 1`. Carries the full editor gotcha catalog (publishing-target reset, H3 auto-list, `cmd+a` time-field wipe, Discard traps, 90-day cap) in `references/linkedin-article-formatting.md`. Three human stop-points: cover-image upload, intro-post approval (3-sentence question-led, stop-slopped), final Schedule click. Records via `rockstarr-infra:publish-log`. Account identity / newsletter name / schedule are prompted at run time (personal-account items, not stack config). |
+| `verify-linkedin-newsletter` | NEW (0.9) | Go-live check: confirms a scheduled LinkedIn newsletter edition actually posted within ~3 days of its expected date (from `content-calendar` / `_publish.log`), reads the author's newsletter on LinkedIn via Chrome MCP, reports the result to the workspace, and can alert the strategist via `rockstarr-infra:send-notification`. No ClickUp. |
 | `publish-wp` | DEFER | WordPress publish connector. Builds when first client's stack lights up. |
 | `publish-ga` | DEFER | GrowthAmp blog publish connector. Builds when first client's stack lights up. |
-| `publish-linkedin-newsletter` | DEFER | Republish an approved TL piece as a LinkedIn newsletter via Chrome MCP. Builds when first client's `linkedin_newsletters_per_month >= 1`. |
 
 ## Preconditions (every client)
 

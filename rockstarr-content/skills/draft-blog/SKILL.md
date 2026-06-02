@@ -1,6 +1,6 @@
 ---
 name: draft-blog
-description: "This skill should be used when the user asks to \"draft the blog\", \"write the researched blog\", \"draft the informational post\", \"turn this outline into a post\", or names an approved outline to turn into prose. It is the second step of the two-step researched-blog flow and refuses to run without an approved outline. As of v0.4 it enforces the canonical blog SEO/GEO reference: a required FAQ section (3-5 H3 questions, direct-answer-first), inline [Source: URL] placement next to every external fact, structured definitions when introducing concepts, keyword density tracking, named sources over generic phrasing, and meta title + meta description in front-matter. Runs the SEO/GEO quality checklist as Pass 1 BEFORE stop-slop (Pass 2). Produces a draft in 03_drafts/content/ in the client's approved voice, citing first-party knowledge-base sources for voice and external sources for stats; third-party voice never paraphrased."
+description: "This skill should be used when the user asks to \"draft the blog\", \"write the researched blog\", or \"turn this outline into a post\". Second step of the two-step researched-blog flow — refuses to run without an approved outline. Enforces the blog SEO/GEO reference: required FAQ (3-5 H3 questions, direct-answer-first), inline [Source: URL] next to every external fact, structured definitions, keyword density, named sources, meta title + description in front-matter. SEO/GEO checklist runs as Pass 1 BEFORE stop-slop (Pass 2). Writes to 03_drafts/content/. Third-party voice never paraphrased."
 ---
 
 # draft-blog
@@ -348,7 +348,7 @@ The 13 tests (verbatim from the reference):
 13. References section at the bottom lists all external sources
     cited.
 
-Compute `seo_geo_pass_status` as `<passes>/13` (e.g.,
+Compute `seo_geo_pass_status` as `[passes]/13` (e.g.,
 `13/13 pass`, `11/13`).
 
 **Decision matrix:**

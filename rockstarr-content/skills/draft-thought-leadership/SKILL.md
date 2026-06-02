@@ -1,6 +1,6 @@
 ---
 name: draft-thought-leadership
-description: "This skill should be used when the user asks to \"draft a thought-leadership piece\", \"write an opinion post\", \"turn this outline into a TL post\", \"push back on X\", \"make the argument for Y\", or names an approved TL outline to turn into prose. It is the second step of the two-step thought-leadership flow added in v0.3 and refuses to run without an approved outline from outline-thought-leadership. Produces a shorter, hard-hitting, opinion-driven piece in 03_drafts/content/ that argues the thesis from the outline, opens on the named scene, and crystallizes the take in the named quotable line. Runs the canonical TL rubric as a post-draft pass before stop-slop. Weight comes from the stance, not the research."
+description: "This skill should be used when the user asks to \"draft a thought-leadership piece\", \"write an opinion post\", \"turn this outline into a TL post\", \"push back on X\", or \"make the argument for Y\". Second step of the two-step TL flow — refuses to run without an approved outline from outline-thought-leadership. Produces a shorter, opinion-driven piece in 03_drafts/content/ that argues the outline's thesis, opens on the named scene, and crystallizes the take in the named quotable line. Runs the TL rubric as Pass 1 before stop-slop. Weight comes from the stance, not the research."
 ---
 
 # draft-thought-leadership
@@ -131,6 +131,7 @@ proprietary_term_buried: "Term name, or null"
 enemy: "What this argues against, or null"
 outline_source: "03_drafts/content/outline-tl_[slug].md"
 target_keyword: "primary keyword phrase (optional — TL is stance-led, not SEO-led)"
+linkedin_newsletter_eligible: false   # true if the topic pick carried `LinkedIn newsletter: true`; read by publish-linkedin-newsletter
 word_count: 812
 reading_time_minutes: 4
 produced_by: "rockstarr-content/draft-thought-leadership@0.3.0"
@@ -304,7 +305,7 @@ The seven tests, in order:
    ends with a take-home line above the CTA — not the CTA
    alone.
 
-Compute `tl_rubric_score` as `<passes>/7` (e.g., `7/7 pass`,
+Compute `tl_rubric_score` as `[passes]/7` (e.g., `7/7 pass`,
 `5/7`).
 
 **Decision matrix:**
@@ -380,10 +381,16 @@ for the reviewer.
 ### Pairing with LinkedIn newsletters
 
 Thought-leadership pieces are the source material for LinkedIn
-newsletter sends via `publish-linkedin-newsletter` (DEFER in v0.2)
-when `stack.md.linkedin_newsletters_per_month >= 1`. No extra work
-in this skill — the downstream skill reads the approved TL piece
-from `04_approved/content/` and republishes it.
+newsletter sends via `publish-linkedin-newsletter` when
+`stack.md.linkedin_newsletters_per_month >= 1`. The only extra
+work in this skill: if the topic pick carried `LinkedIn
+newsletter: true` (set by `ideate-topics`), set
+`linkedin_newsletter_eligible: true` in the front-matter so the
+downstream skill knows this approved piece is a republish source.
+Everything else is downstream — `publish-linkedin-newsletter`
+reads the approved TL piece from `04_approved/content/` and
+republishes it; `verify-linkedin-newsletter` confirms it went
+live.
 
 ## What NOT to do
 

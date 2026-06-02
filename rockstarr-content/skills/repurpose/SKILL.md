@@ -216,7 +216,7 @@ Read the full piece → [URL]
    drop silently if over-limit. Count at write time; flag if a
    post blows the cap.
 7. **Source-link fidelity.** Pull the live URL from
-   `stack.md.website_base_url + /blog/<slug>` (or the client's
+   `stack.md.website_base_url + /blog/[slug]` (or the client's
    actual pattern). Do not invent.
 
 ## Final pass — stop-slop (mandatory, per derivative)

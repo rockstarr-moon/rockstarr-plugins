@@ -1,6 +1,6 @@
 ---
 name: outline-thought-leadership
-description: "This skill should be used when the user asks to \"outline a thought-leadership piece\", \"plan an opinion post before drafting\", \"structure my TL piece\", \"sharpen the argument before I write\", or names a thought-leadership-format topic. It is the first step of the two-step thought-leadership flow added in v0.3 and must complete before draft-thought-leadership runs. Forces five required fields — thesis, smart-competitor counter-argument, opening scene, quotable line, buried proprietary term — applied from the canonical TL rubric. Writes an outline file in 03_drafts/content/ with full front-matter; outline must be explicitly approved by the user before drafting begins. Researched / informational topics route to outline-blog instead."
+description: "This skill should be used when the user asks to \"outline a thought-leadership piece\", \"plan an opinion post before drafting\", or \"sharpen the argument before I write\". First step of the two-step TL flow — must complete before draft-thought-leadership runs. Forces five required fields per the TL rubric: thesis, smart-competitor counter-argument, opening scene, quotable line, buried proprietary term. Writes the outline to 03_drafts/content/. Outline must be explicitly approved before drafting. Researched/informational topics route to outline-blog instead."
 ---
 
 # outline-thought-leadership

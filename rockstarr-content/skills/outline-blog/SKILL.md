@@ -1,6 +1,6 @@
 ---
 name: outline-blog
-description: "This skill should be used when the user asks to \"outline a blog post\", \"plan the researched blog\", \"structure the post before drafting\", or names a researched informational topic they want to blog about. It is the first step of the two-step researched-blog flow and must complete before draft-blog runs. As of v0.4 it runs an external WebSearch research phase on top of the first-party KB read, and produces an outline that includes SEO/GEO targets, a required FAQ section (3-5 questions), a keyword placement plan, an internal linking plan with anchors and target URLs, an external sources table, meta title and meta description drafts, and the standard angle/audience/H2 structure. The outline must be explicitly approved by the user before any drafting begins. Opinion pieces do not outline — route those to outline-thought-leadership instead."
+description: "This skill should be used when the user asks to \"outline a blog post\", \"plan the researched blog\", or \"structure the post before drafting\". First step of the two-step researched-blog flow — must complete before draft-blog. Runs external WebSearch + first-party KB read and produces an outline with SEO/GEO targets, required FAQ section (3-5 questions), keyword + internal linking plans, external sources table, meta title + description drafts, angle/audience/H2 structure. Outline must be explicitly approved before drafting. Opinion pieces route to outline-thought-leadership instead."
 ---
 
 # outline-blog

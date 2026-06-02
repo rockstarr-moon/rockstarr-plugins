@@ -1,6 +1,6 @@
 ---
 name: draft-case-study
-description: "This skill should be used when the user asks to \"draft a case study\", \"write a case study on [client name]\", \"document the [customer] win\", \"start the case-study interview\", or when a quarterly case-study reminder fires. Runs an interview-driven flow using AskUserQuestion to walk the client through the Rockstarr custom-GPT case-study prompt one question at a time. Writes a running transcript to 02_inputs/content/case-study-interview-[slug].md as it goes. Produces the polished case-study draft to 03_drafts/content/case-study-[slug].md only after every required question has an answer. Does NOT accept pre-written case-study documents — this lane is interview-first by design."
+description: "This skill should be used when the user asks to \"draft a case study\", \"write a case study on [client]\", \"document the [customer] win\", or when a quarterly case-study reminder fires. Interview-driven flow using AskUserQuestion to walk the client through the canonical case-study prompt one question at a time. Writes a running transcript to 02_inputs/content/case-study-interview-[slug].md, then produces the polished draft to 03_drafts/content/case-study-[slug].md only after every required question has an answer. Does NOT accept pre-written documents — interview-first by design."
 ---
 
 # draft-case-study

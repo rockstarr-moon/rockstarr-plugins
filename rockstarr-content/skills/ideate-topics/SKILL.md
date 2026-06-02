@@ -1,6 +1,6 @@
 ---
 name: ideate-topics
-description: "This skill should be used when the user asks to \"ideate content topics\", \"brainstorm content angles\", \"suggest topics for next month\", \"give me topic ideas\", or \"what should we write about this month\". Reads the client's profile, approved style guide, first-party knowledge base, publish log, AND the stack-cadence fields in stack.md, then proposes 8 to 12 ranked topic angles filtered to lanes the client actually publishes (cadence >= 1). Each angle carries working title, pillar, audience, evidence pointer, and a lane (researched blog, thought leadership, email newsletter, or LinkedIn newsletter). Output is written to 02_inputs/content-topics_YYYY-MM.md monthly for the user to pick from before drafting."
+description: "This skill should be used when the user asks to \"ideate content topics\", \"brainstorm content angles\", or \"what should we write about this month\". Reads client-profile, style guide, first-party KB, publish log, and stack-cadence fields, then proposes 8-12 ranked angles filtered to lanes the client actually publishes (cadence >= 1). Each angle carries working title, pillar, audience, evidence pointer, and lane. Writes 02_inputs/content-topics_YYYY-MM.md for the user to pick from."
 ---
 
 # ideate-topics
@@ -122,7 +122,7 @@ For the **researched-blog lane**, when the backlog exists:
    - `05_published/_publish.log` (already published).
    - `04_approved/content/` (approved, awaiting publish).
    - `03_drafts/content/` (currently drafting).
-   - The previous month's `content-topics_<YYYY-MM>.md` with
+   - The previous month's `content-topics_[YYYY-MM].md` with
      `Pick: yes` (already in flight from last month).
 3. From the remaining backlog items, propose this month's
    blog picks at roughly 2× monthly cadence (so the user has
@@ -140,6 +140,23 @@ For the **researched-blog lane**, when the backlog exists:
    `search_intent`, and `difficulty` in its line-item block —
    so `outline-blog` downstream can use the cluster info for
    internal linking defaults.
+
+#### Fix-existing items (work_type)
+
+As of the seo-site-audit integration, backlog items also carry
+a `work_type` of `new`, `refresh`, `consolidate`, or `expand`.
+Most are `new` (net-new topics). The others are audit-sourced
+items acting on an existing post and carry an `existing_url`.
+
+Treat them like any other backlog item for sequencing — they
+already have their OWN unique slug (the strategist suffixes
+fix-existing slugs, e.g. `-refresh-2026`, precisely so they are
+NOT filtered out by the publish-log dedup in step 2). When you
+propose one, carry its `work_type` and `existing_url` through to
+the topic line so `outline-blog` knows it's refreshing or
+consolidating an existing URL rather than starting from scratch.
+No special-casing beyond that: a `refresh` item is a blog topic
+for the month like any other.
 
 For the **other lanes** (thought leadership, email
 newsletter, LinkedIn newsletter), the backlog is informational
@@ -248,8 +265,11 @@ Lanes with cadence 0 are suppressed — no topics proposed.
 - **Why now:** [one line — topical, seasonal, gap in publish log, customer question]
 - **Rough length:** [800-word TL | 1500-word researched blog | 700-word newsletter | etc.]
 - **Handoff:** outline-blog | outline-thought-leadership | draft-newsletter | publish-linkedin-newsletter
+- **LinkedIn newsletter:** true | false (thought-leadership lane only; true when this angle is flagged for LinkedIn-newsletter republish. Carries downstream to the TL draft's `linkedin_newsletter_eligible` front-matter and tells `content-calendar` to add a LinkedIn-newsletter slot sourced from this piece. Default false. Only set true when `linkedin_newsletters_per_month >= 1`.)
 - **From backlog:** true | false (default false; true when the angle was sourced from `02_inputs/seo/backlog.md`)
 - **Slug:** kebab-cased-slug (required when from_backlog is true; carried verbatim from the backlog so downstream slug matching works)
+- **Work type:** new | refresh | consolidate | expand (blog lane, when from_backlog; default new)
+- **Existing URL:** [url] | null (required when work_type is refresh/consolidate/expand; carried from the backlog item)
 - **Cluster:** [cluster name from backlog] (blog lane, when from_backlog)
 - **Cluster role:** pillar | supporting (blog lane, when from_backlog)
 - **Parent pillar slug:** [slug] | null (when cluster_role=supporting)
@@ -289,10 +309,12 @@ useful than clever frames with no evidence.
 
 - **LinkedIn newsletter (reuse of TL):** Not a new angle — a
   thought-leadership piece already in the pipeline that will be
-  republished as a LinkedIn article. Call this out when a TL
-  angle is especially well-suited for republishing. The handoff
-  is `publish-linkedin-newsletter` (DEFER in v0.2), running
-  against an approved TL piece.
+  republished as a LinkedIn article. When a TL angle is especially
+  well-suited for republishing AND
+  `linkedin_newsletters_per_month >= 1`, set `LinkedIn newsletter:
+  true` on that angle's line item. The handoff is
+  `publish-linkedin-newsletter`, running against the approved TL
+  piece; `content-calendar` adds the LinkedIn-newsletter slot.
 
 ## Enemy field — thought leadership only
 

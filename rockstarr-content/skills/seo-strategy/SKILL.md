@@ -1,6 +1,6 @@
 ---
 name: seo-strategy
-description: "This skill should be used when the user asks to \"run the SEO strategy\", \"do keyword research for [client]\", \"build the content plan\", \"build a content cluster strategy\", \"set up the SEO blog plan\", \"refresh the keyword plan\", or otherwise wants to produce a strategic blog content plan organized into pillar pages and supporting posts. New in v0.5. Runs the six-phase workflow: gather inputs from existing intake artifacts (client-profile, stack, style guide), research the client website + keyword landscape, generate 30 seed keywords + 50 long-tail variants, identify 5 competitor gaps, build 4-5 topic clusters with one pillar page + 4-6 supporting posts each, and write a strategy document plus a canonical backlog of 25-32 prioritized blog topics. The backlog is read by ideate-topics each month — strategy decides WHICH topics matter, ideate-topics sequences them. Does NOT create ClickUp tasks; the backlog file is the production-tracking artifact in this stack."
+description: "This skill should be used when the user asks to \"run the SEO strategy\", \"do keyword research\", \"build the content plan\", or \"refresh the keyword plan\". Produces a strategic blog plan in pillar pages + supporting posts. Six-phase workflow: gather intake artifacts, research the client website + keyword landscape, generate 30 seed keywords + 50 long-tail variants, identify 5 competitor gaps, build 4-5 topic clusters (1 pillar + 4-6 supporting each), write the strategy doc + a canonical 25-32-topic backlog. When a recent seo-site-audit exists, reads it and folds refresh/consolidate/expand items for existing posts into the backlog alongside net-new topics. The backlog is read by ideate-topics monthly — strategy decides WHICH topics, ideate-topics sequences them."
 ---
 
 # seo-strategy
@@ -12,7 +12,7 @@ across the next two quarters to build topical authority for this
 client."
 
 The output is two files. A strategy document at
-`02_inputs/seo/strategy_<YYYY-MM-DD>.md` carrying keyword
+`02_inputs/seo/strategy_[YYYY-MM-DD].md` carrying keyword
 research, competitor gap analysis, and topic clusters. A
 canonical backlog at `02_inputs/seo/backlog.md` listing 25-32
 prioritized content pieces with cluster + pillar/supporting
@@ -28,7 +28,12 @@ prefers backlog items over fresh ideation.
 ## When to run
 
 - **Onboarding** — every new client with `blogs_per_month >= 1`
-  in stack.md gets an SEO strategy as part of intake.
+  in stack.md gets an SEO strategy as part of intake. Run
+  `seo-site-audit` first so the initial backlog reflects the
+  existing site.
+- **After a site audit** — when `seo-site-audit` produces a fresh
+  `02_inputs/seo/audit_*.md`, re-run strategy to fold its
+  content findings into the backlog.
 - **Quarterly refresh** — typical cadence is once per quarter,
   on demand from the client or strategist.
 - **New service line** — when the client adds a service that
@@ -85,6 +90,19 @@ Read in this order:
    that have moved through the workflow (drafted, approved,
    published) so the strategist can confirm before they get
    dropped.
+6. **The newest site audit at `02_inputs/seo/audit_*.md`** if
+   one exists (sort by the date in the filename; read the most
+   recent). Produced by `rockstarr-content:seo-site-audit`, it
+   carries a "Content findings for seo-strategy" table tagging
+   existing-site issues with a `work_type` of `refresh`,
+   `consolidate`, `expand`, or `new`. When present, the audit
+   is the **preferred** source for the website analysis in
+   Phase 1A (it already crawled the site deeply) and seeds the
+   "fix-existing" items in the backlog. The audit is optional —
+   if absent, run Phase 1A's shallow WebFetch analysis as
+   before. Treat an audit older than ~2 quarters as stale: note
+   it, but re-verify against the live site rather than trusting
+   it wholesale.
 
 ## Phase 1: Research
 
@@ -93,6 +111,17 @@ keyword landscape.
 
 ### 1A. Website analysis
 
+**If a recent `02_inputs/seo/audit_*.md` exists, prefer it.** The
+audit already crawled the homepage, money pages, blog index,
+sitemap, and schema, and catalogued the topical-authority picture.
+Read its "Content findings for seo-strategy" table and its
+"Pages audited" / content sections instead of re-crawling from
+scratch. Spot-check a couple of live URLs to confirm nothing major
+shipped since the audit, then proceed. Skip the rest of this
+sub-section's manual fetches except where the audit didn't cover
+something you need.
+
+If there is **no** audit (or it's stale), do the analysis directly.
 Use `WebFetch` to pull the client's homepage. Extract:
 
 - Services or products offered.
@@ -227,7 +256,40 @@ Total content pieces across the strategy:
 Aim for 25-32 pieces total — enough to feed 6-12 months of
 output at typical monthly cadence (1-3 blogs/month).
 
-### 3C. Implementation notes
+Every cluster piece is `work_type: new` unless the audit
+(below) maps it to existing content.
+
+### 3C. Fix-existing items from the audit
+
+If a site audit was read in the Inputs step, its "Content
+findings for seo-strategy" table lists existing-site issues
+already tagged with a `work_type`. Fold each into the backlog
+as its own item, attached to the most relevant cluster:
+
+- **`refresh`** — an existing post with stale dated content or
+  outdated facts. The action is an update, not a rewrite.
+- **`consolidate`** — two or more posts cannibalizing one
+  keyword. Name the canonical destination and the 301 source.
+- **`expand`** — a thin post, or one missing an FAQ section /
+  currency markers / cited sources (a content-actionable GEO
+  gap from audit Phase 7). The action is to deepen it.
+
+These coexist with the `new` cluster pieces. A typical
+audit-informed strategy is mostly `new` with a handful of
+fix-existing items — don't let fix-existing crowd out the
+net-new authority-building plan.
+
+**Slug rule (load-bearing).** Refresh / consolidate / expand
+items get their OWN unique backlog slug — append a
+`-refresh-[YYYY]`, `-consolidate`, or `-expand` suffix. NEVER
+reuse the published post's slug. `ideate-topics` filters out
+backlog items whose slug appears in `05_published/_publish.log`;
+a fix-existing item that reused the published slug would be
+silently dropped from monthly ideation. Each fix-existing item
+also carries an `existing_url` pointing at the post it acts on,
+so downstream skills and the operator know what's being changed.
+
+### 3D. Implementation notes
 
 End the strategy doc with:
 
@@ -247,7 +309,7 @@ End the strategy doc with:
 ### 4A. Strategy document
 
 Write to
-`/rockstarr-ai/02_inputs/seo/strategy_<YYYY-MM-DD>.md`. If a
+`/rockstarr-ai/02_inputs/seo/strategy_[YYYY-MM-DD].md`. If a
 file with the same date exists, append `-2`, `-3`. Never
 overwrite a previous strategy doc — keep them all for audit.
 
@@ -261,10 +323,11 @@ strategy_run_date: "YYYY-MM-DD"
 core_topic: "..."
 icp_summary: "one-line ICP statement from client-profile.md"
 website_url: "from stack.md"
+audit_source: "02_inputs/seo/audit_<YYYY-MM-DD>.md or null"
 total_items_in_backlog: 28
 cluster_count: 4
 quick_win_count: 10
-produced_by: "rockstarr-content/seo-strategy@0.5.0"
+produced_by: "rockstarr-content/seo-strategy@0.8.0"
 produced_at: "ISO timestamp"
 style_guide_version: "matched from style-guide.md front-matter"
 # ---
@@ -285,7 +348,12 @@ Body sections in this order:
 6. **Topic cluster maps** (4-5 clusters, each with pillar
    title, supporting post titles, target keywords per
    piece, internal linking summary).
-7. **Implementation notes** (priority, format, cadence,
+7. **Fix-existing items** (only when an audit was read — the
+   `refresh` / `consolidate` / `expand` items derived from the
+   audit, each with its existing URL and the audit finding that
+   motivated it). Omit this section entirely if no audit fed
+   the run.
+8. **Implementation notes** (priority, format, cadence,
    linking).
 
 Run stop-slop on every prose section (executive summary,
@@ -308,14 +376,16 @@ Required front-matter:
 client_id: [from client.toml]
 strategy_run_at: "ISO timestamp"
 strategy_doc_source: "02_inputs/seo/strategy_<YYYY-MM-DD>.md"
+audit_source: "02_inputs/seo/audit_<YYYY-MM-DD>.md or null if no audit was read"
 total_items: 28
+work_type_counts: { new: 24, refresh: 2, consolidate: 1, expand: 1 }
 clusters:
   - { name: "Cluster A", role_count: { pillar: 1, supporting: 5 } }
   - { name: "Cluster B", role_count: { pillar: 1, supporting: 6 } }
   - { name: "Cluster C", role_count: { pillar: 1, supporting: 4 } }
   - { name: "Cluster D", role_count: { pillar: 1, supporting: 5 } }
 quick_win_count: 10
-produced_by: "rockstarr-content/seo-strategy@0.5.0"
+produced_by: "rockstarr-content/seo-strategy@0.8.0"
 # ---
 ```
 
@@ -343,6 +413,7 @@ needed beyond a full re-run via `seo-strategy`.
 
 ### [PILLAR] [Pillar page title]
 - **Slug:** kebab-cased-pillar-slug
+- **Work type:** new
 - **Cluster role:** pillar
 - **Cluster:** Cluster 1 — [Cluster name]
 - **Target keyword:** [primary keyword]
@@ -358,6 +429,7 @@ needed beyond a full re-run via `seo-strategy`.
 
 ### [Supporting post title]
 - **Slug:** kebab-cased-supporting-slug
+- **Work type:** new
 - **Cluster role:** supporting
 - **Cluster:** Cluster 1 — [Cluster name]
 - **Parent pillar:** [PILLAR] [Pillar page title] (slug: pillar-slug)
@@ -368,7 +440,23 @@ needed beyond a full re-run via `seo-strategy`.
 - **Quick win:** true ⭐
 - **Notes:** [why this supports the pillar]
 
-(repeat for each supporting post in the cluster)
+### [Refresh of an existing post] (audit-sourced)
+- **Slug:** existing-post-slug-refresh-2026
+- **Work type:** refresh
+- **Existing URL:** https://CLIENT-DOMAIN/blog/existing-post/
+- **Cluster role:** supporting
+- **Cluster:** Cluster 1 — [Cluster name]
+- **Parent pillar:** [PILLAR] [Pillar page title] (slug: pillar-slug)
+- **Target keyword:** [keyword]
+- **Search intent:** Informational
+- **Difficulty:** Low
+- **Word-count target:** [keep existing, add ~300-500]
+- **Quick win:** true ⭐
+- **Notes:** [audit finding — stale 2023 figures; what to update]
+
+(repeat for each item in the cluster; `consolidate` and
+`expand` items follow the same shape as the refresh block,
+with their own suffixed slug and `existing_url`)
 
 ---
 
@@ -416,10 +504,18 @@ After writing both files:
    surface.
 3. **Slug uniqueness check.** No duplicate slugs across
    the backlog.
-4. **Quick win count check.** 8-12 quick wins total,
+4. **Fix-existing slug-safety check** (when fix-existing
+   items exist). Every `refresh` / `consolidate` / `expand`
+   item's slug must be suffixed (e.g. `-refresh-2026`) and
+   must NOT equal any slug present in
+   `05_published/_publish.log`. A fix-existing item whose
+   slug matches a published slug would be silently filtered
+   out by `ideate-topics` — surface and fix any that collide.
+   Confirm each fix-existing item carries an `existing_url`.
+5. **Quick win count check.** 8-12 quick wins total,
    distributed across clusters (no single cluster should
    monopolize quick wins).
-5. **Already-covered count.** Note how many backlog items
+6. **Already-covered count.** Note how many backlog items
    are already in publish_log / approved / drafts. If
    more than ~30% are already covered, the re-run is
    producing a lot of duplicate planning — surface to the
@@ -430,7 +526,7 @@ Print a one-paragraph summary in chat:
 > Strategy run for [Client name]. [N] clusters, [N] total
 > items in backlog ([N] pillar + [N] supporting),
 > [N] quick wins flagged. Strategy doc:
-> `02_inputs/seo/strategy_<YYYY-MM-DD>.md`. Backlog:
+> `02_inputs/seo/strategy_[YYYY-MM-DD].md`. Backlog:
 > `02_inputs/seo/backlog.md`. `ideate-topics` will draw
 > from this backlog on the next monthly run.
 
@@ -508,7 +604,10 @@ user before saving.
 
 ## Related
 
-- `02_inputs/seo/strategy_<YYYY-MM-DD>.md` — strategy doc
+- `rockstarr-content:seo-site-audit` — audits the existing
+  site and writes `02_inputs/seo/audit_[YYYY-MM-DD].md`, whose
+  content findings this skill folds into the backlog.
+- `02_inputs/seo/strategy_[YYYY-MM-DD].md` — strategy doc
   output (audit trail, dated files preserved).
 - `02_inputs/seo/backlog.md` — canonical backlog
   (single-file, regenerated per run).
