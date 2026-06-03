@@ -64,9 +64,15 @@ Send button to become enabled (state visible in the DOM).
 
 ### Step 4 — Click Send
 
-Match the Send button by visible text ("Send" or the localized
-equivalent Interceptly is shipping). Do NOT rely on a positional
-selector; the button re-orders across UI revisions.
+Find the Send button by visible text ("Send" or the localized
+equivalent Interceptly is shipping) — do NOT rely on a positional
+selector; the button re-orders across UI revisions. Then **real-click
+it** (the Chrome MCP `computer` click — a real CDP click, not a
+synthetic `button.click()`), per the shared convention in
+`rockstarr-infra/skills/_shared/references/chrome-mcp-clicking.md`.
+Re-locate immediately before clicking. (Note: Step 3's React
+native-setter is the documented way to populate the composer value —
+that's a value-set, not a click, and stays as-is.)
 
 Known quirk: if Enter-to-send is enabled, avoid pressing Enter
 from the composer — a stray newline in the body becomes a

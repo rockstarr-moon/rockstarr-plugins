@@ -468,6 +468,15 @@ The channel-I/O skills handle these explicitly:
   outcomes — they wait for the operator to authorize via the
   email's `claude://` deep-link. 24 skills. Requires
   `rockstarr-infra >= 0.8.0`.
+- `0.2.6` — Chrome MCP click mechanism (ClickUp AI-176). Gated
+  controls now use **real coordinate clicks**, not synthetic JS
+  clicks: `apply-label` real-clicks the label (was `label.click()`)
+  and `send-message` real-clicks Send. Synthetic clicks are untrusted
+  and can be dropped silently (the failure a Windows client hit on
+  Sales Nav). The `send-message` React native-setter (composer
+  value-set) is unchanged — it's a value-set, not a click. Follows the
+  new shared `_shared/references/chrome-mcp-clicking.md`. Requires
+  `rockstarr-infra >= 0.11.0`.
 
 Deferred past V0.1:
 

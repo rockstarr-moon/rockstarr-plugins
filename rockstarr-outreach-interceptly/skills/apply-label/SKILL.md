@@ -1,6 +1,6 @@
 ---
 name: apply-label
-description: "This skill should be used after send-message returns success in the per-reply pipeline, when rockstarr-reply:present-for-approval's let-it-hang option routes to label-only, or when the user says \"label this thread\", \"tag this lead as Not Interested\", or \"apply a label\". Uses the Interceptly Labels UI via Chrome MCP (label.click() pattern) to toggle the proposed label on the current thread, with Labels-nav-bug recovery if the UI navigates away to Campaigns. Refuses to apply more than one label per thread per pipeline run — labels are single-value."
+description: "This skill should be used after send-message returns success in the per-reply pipeline, when rockstarr-reply:present-for-approval's let-it-hang option routes to label-only, or when the user says \"label this thread\", \"tag this lead as Not Interested\", or \"apply a label\". Uses the Interceptly Labels UI via Chrome MCP (real coordinate clicks, not synthetic label.click()) to toggle the proposed label on the current thread, with Labels-nav-bug recovery if the UI navigates away to Campaigns. Refuses to apply more than one label per thread per pipeline run — labels are single-value."
 ---
 
 # apply-label
@@ -54,12 +54,17 @@ or page title changes to Campaigns, recover:
 
 ### Step 2 — Toggle the correct label
 
-The Labels panel is a list of checkboxes. Use
-`label.click()` (matching the visible label text) to toggle
-the target label on. Prefer clicking the `[label]` element
-over the `[input]` — Interceptly's onClick handler is on the
-label, and the preserved Rockstarr Chrome MCP pattern does the
-same.
+The Labels panel is a list of checkboxes. **Real-click** the
+target label (matching the visible label text) to toggle it on —
+the Chrome MCP `computer` click (a real CDP click), not a
+synthetic `label.click()`. Per the shared convention in
+`rockstarr-infra/skills/_shared/references/chrome-mcp-clicking.md`,
+gated controls get real coordinate clicks; synthetic JS clicks can
+be dropped silently (the failure a Windows client hit on Sales Nav,
+AI-176). Aim the click at the `[label]` element's position rather
+than the `[input]` — Interceptly's onClick handler is on the label.
+Re-locate before clicking and verify the label's checked state
+flipped after.
 
 If other labels are already applied to this thread, DO NOT
 remove them. This skill is additive only — a thread can have

@@ -141,6 +141,17 @@ list and confirm your skill handles the relevant ones:
 Don't paper over these with sleeps. The recovery patterns in the
 existing skills are the right templates.
 
+**Click mechanism (as of 0.2.6).** Gated controls (Send, the Labels
+panel) are clicked with **real coordinate clicks**, not synthetic
+`element.click()` — synthetic clicks are untrusted and some web apps
+drop them silently (the failure a Windows client hit on Sales Nav;
+ClickUp AI-176). See the shared
+`rockstarr-infra/skills/_shared/references/chrome-mcp-clicking.md`.
+Note the distinction: the React native-setter in `send-message` is a
+value-SET on the composer textarea (a documented React quirk), not a
+click — it stays. `javascript_tool` for reading/extraction stays fine
+too. Only the activation of gated controls must be a real click.
+
 ## What's high-risk to change in this plugin
 
 - **`confirm-session-interceptly`.** Wrong-account sends are the
