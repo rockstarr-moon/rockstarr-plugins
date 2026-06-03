@@ -92,7 +92,27 @@ From the open thread view, click the Tasks tab. Known UI quirk:
 this tab sometimes shows an empty state even when tasks exist
 — wait 2s before concluding no tasks are present.
 
-Click `Create task` (text match).
+### Step 3.5 — Close any open prior follow-up task first
+
+Before creating the fresh task, check whether this lead already has
+an open follow-up task (common when the bot or operator touched the
+thread before). A stale prior task plus a fresh one means the lead
+surfaces twice and the operator double-works it.
+
+For each open prior follow-up task on this thread:
+
+1. Open the task (real-click it to expand — per
+   `rockstarr-infra/skills/_shared/references/chrome-mcp-clicking.md`,
+   gated controls get real coordinate clicks, not synthetic JS).
+2. Click **Complete** to close it.
+3. Record the completion in the Tasks sheet of `outreach-mirror.xlsx`
+   (status `completed`, `completed_at`).
+
+Leave the lead's NON-follow-up tasks alone (the client may keep their
+own taxonomy tasks). Only close prior tasks this pipeline created
+(reason/title prefix match). Then continue.
+
+Click `Create task` (text match; real coordinate click).
 
 ### Step 4 — Fill the task form
 

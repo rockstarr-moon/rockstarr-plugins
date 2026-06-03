@@ -85,14 +85,15 @@ four interviews and stored in the client folder.
 | `process-inbox` | Walks Interceptly Inbox → Replied filter, oldest-first. For each unread thread: scrape context → `qualify-lead` → build handoff bundle → call `rockstarr-reply`. In foreground mode, executes the returned bundle (send + label + task, or label-only, or flag, or book-meeting-handoff). In background mode, stops after `draft-reply` stages a draft, accumulates the path, and returns it; deterministic non-draft branches (label-only, flag) still execute. |
 | `process-my-tasks` | Runs after `process-inbox` returns zero unreads for the account. Walks Interceptly → My Tasks (overdue + due-today). `book-meeting-interceptly` task type routes direct in BOTH modes (the close was authorized on a prior turn); other types run the same handoff as `process-inbox` with an `intent_hint` drawn from task metadata. Same mode semantics as `process-inbox`. |
 
-### Per-reply channel I/O (4)
+### Per-reply channel I/O (5)
 
 | Skill | Purpose |
 |-------|---------|
-| `qualify-lead` | Reads the right-panel context + any per-campaign ICP overrides. Returns `target` / `not_target` / `ambiguous` / `unknown` with a matching-rule string. Feeds the handoff bundle's `icp_verdict`. |
-| `send-message` | Sends the approved body into the open Interceptly thread via Chrome MCP. Uses the React native-setter for the composer. Refuses to paste a body containing `stack.md.booking_link_url`. Logs to Messages sheet. |
-| `apply-label` | Applies one Interceptly label to the current thread. Handles the Labels-nav-bug (clicking Labels sometimes navigates to Campaigns). Logs to Labels sheet. |
-| `create-followup-task` | Converts a follow-up-timer keyword (from `rockstarr-reply:follow-up-timer`) + `stack.md.followup_timers` overrides into an Interceptly task with business-days math and the Friday→Monday shift for `meeting_proposed`. Logs to Tasks sheet. |
+| `interceptly-reply-handler` | **On-demand single-thread entry** into the per-reply pipeline (NEW in 0.3.0). When the operator names one lead ("handle this reply for [name]", "what should I say to [name]"), it locates that thread and runs the same per-thread sequence `process-inbox` runs (confirm-session → scrape → `qualify-lead` → `rockstarr-reply` → send/label/task or book). Thin orchestrator — no drafting/voice/ICP logic of its own; reuses the existing skills. The batch version is `process-inbox`. |
+| `qualify-lead` | Reads the right-panel context + any per-campaign ICP overrides. **As of 0.3.0, does a mandatory company-website research step before concluding** (title alone is insufficient — it can flip the verdict both ways; AI-166) and returns a `notes` positioning signal for the draft. Returns `target` / `not_target` / `ambiguous` / `unknown` with a matching-rule string. Feeds the handoff bundle's `icp_verdict`. |
+| `send-message` | Sends the approved body into the open Interceptly thread via Chrome MCP. Uses the React native-setter for the composer value; **real coordinate click on Send** (0.2.6). Refuses to paste a body containing `stack.md.booking_link_url`. Logs to Messages sheet. |
+| `apply-label` | Applies one Interceptly label to the current thread via a **real coordinate click** (0.2.6). Handles the Labels-nav-bug (clicking Labels sometimes navigates to Campaigns). Logs to Labels sheet. |
+| `create-followup-task` | Converts a follow-up-timer keyword (from `rockstarr-reply:follow-up-timer`) + `stack.md.followup_timers` overrides into an Interceptly task with business-days math and the Friday→Monday shift for `meeting_proposed`. **As of 0.3.0, closes any stale prior follow-up task for the lead before creating the fresh one.** Logs to Tasks sheet. |
 
 ### Meetings + booking (3)
 
@@ -477,6 +478,25 @@ The channel-I/O skills handle these explicitly:
   value-set) is unchanged — it's a value-set, not a click. Follows the
   new shared `_shared/references/chrome-mcp-clicking.md`. Requires
   `rockstarr-infra >= 0.11.0`.
+- `0.3.0` — on-demand single-thread reply handling (ClickUp AI-166).
+  - **New skill `interceptly-reply-handler`** — a thin orchestrator
+    for handling ONE operator-named reply on demand ("handle this
+    reply for [name]"). It locates the thread and runs `process-inbox`'s
+    per-thread Steps 1–6, reusing `qualify-lead` → `rockstarr-reply`
+    (classify/draft/present-for-approval) → `send-message` /
+    `apply-label` / `create-followup-task` / `book-meeting-interceptly`.
+    No drafting/voice/ICP logic of its own — those stay in
+    `rockstarr-reply` and the client's intake files. 25 skills.
+  - **`qualify-lead` gains a mandatory company-website research step.**
+    Title alone is insufficient — the website can flip the verdict in
+    both directions; it also yields a `notes` positioning signal for
+    the draft. (Harvested from the source process; generalized to the
+    client's ICP rules, not any one client's pitch.)
+  - **`create-followup-task` closes any stale prior follow-up task**
+    for the lead before creating the fresh one.
+  - The source material's R&M-specific voice / pitch (founder-trap,
+    Profit Multiplier, on-ramp copy) intentionally did NOT land in the
+    skill — that's client `style-guide.md` / `offer.md` territory.
 
 Deferred past V0.1:
 

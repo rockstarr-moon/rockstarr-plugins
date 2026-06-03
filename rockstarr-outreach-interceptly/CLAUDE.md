@@ -29,7 +29,7 @@ stop and ask:
 
 ## Skill groupings (mental map)
 
-24 skills sort into six buckets:
+25 skills sort into six buckets:
 
 1. **One-time setup** — `discover-interceptly-accounts`,
    `capture-interceptly-personas`, `capture-icp-qualifications`,
@@ -44,6 +44,17 @@ stop and ask:
 4. **Per-thread pipeline** — `qualify-lead`, `send-message`,
    `apply-label`, `create-followup-task`. The channel-side work
    that follows a `rockstarr-reply:authorized-send` bundle.
+   `interceptly-reply-handler` (new in 0.3.0) is the **on-demand
+   single-thread entry** into this pipeline — when the operator
+   names one lead ("handle this reply for [name]") instead of
+   running the whole inbox. It's a thin orchestrator: it locates the
+   thread and runs `process-inbox`'s per-thread Steps 1–6, reusing
+   the same skills — it adds NO drafting/voice/ICP logic of its own
+   (those stay in `rockstarr-reply` and the client's intake files).
+   Note `qualify-lead` now does a mandatory company-website research
+   step (title alone is insufficient; AI-166), and
+   `create-followup-task` closes any stale prior follow-up task
+   before creating a fresh one.
 5. **Meeting & booking** — `propose-meeting-times-interceptly`,
    `book-meeting-interceptly`, `mark-booked-interceptly`.
 6. **Metrics & reporting** — `metrics-daily-interceptly`,

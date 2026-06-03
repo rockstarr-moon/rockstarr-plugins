@@ -48,9 +48,47 @@ not draft, label, or take any action.
    `## Per-campaign tightening` block on top. Tightenings ADD
    restrictions; they never loosen.
 
+### Step 1.5 — Research the company before concluding (required)
+
+**Title alone is not enough.** The right-panel title sits on top of
+many business models, and it can be wrong in both directions — a lead
+who looks like a target by title can fail the ICP once you see what
+the company actually sells, and a lead who looks non-target by title
+can turn out to run exactly the kind of practice the ICP targets (the
+title is their current client, not their own business). Before
+concluding `target` or `not_target` on the strength of the title +
+right panel, open the **company website** and read it against the
+client's ICP rules.
+
+How:
+
+1. Open the company website (Chrome MCP navigate to a fresh tab;
+   `get_page_text` on the homepage and About page — ~60–90 seconds).
+   Reading only; no clicks required, so no gated-click concern.
+2. Answer, against `icp-qualifications.md`'s target / not-target
+   definitions: **what does the company actually sell** (the business
+   model, not the title), **who is the buyer**, **is the lead an
+   owner/principal or staff**, and **what's the size**. These are what
+   the ICP rules turn on — the title rarely settles them alone.
+3. If the website is thin or single-page, check the LinkedIn company
+   page (founded year, employee count, recent posts) and, if needed,
+   the lead's LinkedIn profile (Step 3's read-only side tab).
+
+Capture two things from this research: the **verdict input** (which
+fed Step 2) and any **positioning signal** for the downstream draft
+(the company's own model language, current focus, visible content
+rhythm or its absence). Pass the positioning signal through in the
+verdict's `notes` so `rockstarr-reply:draft-reply` can mirror the
+lead's actual model rather than generic copy.
+
+Skip this research only when the verdict is already settled without
+it — e.g., the lead explicitly declined, or a not-target rule matches
+on something the title alone makes unambiguous.
+
 ### Step 2 — Match the lead against rules
 
-Run in this order, returning the first matching verdict:
+Run in this order, returning the first matching verdict. Match against
+the **researched** context (Step 1.5), not the bare title:
 
 1. **Not-target rules.** If any not-target rule matches
    (role, company type, behavior), return
@@ -105,7 +143,12 @@ for refinement.
 ### Step 5 — Return
 
 Return the verdict object to the caller. The caller decides what
-to do with it (draft, flag, skip).
+to do with it (draft, flag, skip). Include a `notes` field carrying
+the positioning signal from the Step 1.5 website research (the
+company's own model language, current focus, content rhythm or its
+absence) so `rockstarr-reply:draft-reply` can mirror the lead's
+actual business rather than generic copy. `notes` is optional/empty
+when no research was needed.
 
 ## Semantics
 
