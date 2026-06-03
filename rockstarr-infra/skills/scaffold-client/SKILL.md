@@ -177,10 +177,11 @@ Create these directories and placeholder files under the workspace root:
    `ROCKSTARR_NOTIFY_DIGEST_TO`, leave it in place untouched; the
    helper simply ignores unknown keys.
 
-8. Wire the approval-related scheduled tasks. Two recurring jobs
-   need to exist in this client's Cowork for the approvals system
-   to fire on its own. Use `mcp__scheduled-tasks__create_scheduled_task`
-   to register each.
+8. Wire the recurring scheduled tasks. Two approval-notification
+   jobs always exist; a third **content-autopilot** job is added
+   when this client publishes content (see the conditional block
+   below). Use `mcp__scheduled-tasks__create_scheduled_task` to
+   register each.
 
    Before creating, call `mcp__scheduled-tasks__list_scheduled_tasks`
    and check whether a task with the matching `taskName` already
@@ -220,10 +221,35 @@ Create these directories and placeholder files under the workspace root:
    `[approvals]` block (seeded in step 5), separate from the
    schedule.
 
+   **Content autopilot (conditional — only when content is
+   scheduled):** if any content cadence in `stack.md` is >= 1
+   (`blogs_per_month`, `thought_leadership_per_month`,
+   `email_newsletters_per_month`) AND `content_autopilot` is not
+   `false` (default on), register the daily content-production tick.
+   Same idempotent check (list first; never stomp operator edits).
+
+   ```
+   taskName       = "content-loop"
+   cronExpression = stack.md.content_loop_cron      # default "30 5 * * *"
+                    # 5:30 am local — deliberately BEFORE the 6am
+                    # approvals-digest, so anything produced this
+                    # morning is included in today's digest.
+   prompt         = "Run the content-loop skill in rockstarr-content.
+                    Advance the approved content calendar by one
+                    production step if anything is due; otherwise exit
+                    silently."
+   ```
+
+   Skip this task entirely if every content cadence is 0 or
+   `content_autopilot` is `false` — don't register a loop with
+   nothing to do. The loop only ever produces drafts and stops at the
+   human approval gate; it never approves or publishes.
+
    In the output summary, note for each task: created vs.
    already-existed, the resolved cron, and the local time it
    maps to. This is the only signal the operator gets that the
-   approvals emails are actually wired to fire.
+   approvals emails (and, if wired, the content tick) are actually
+   set to fire.
 
 9. Do not create files inside `/01_knowledge_base/processed/`,
    `/01_knowledge_base/raw/`, or their `third-party/` subdirectories.

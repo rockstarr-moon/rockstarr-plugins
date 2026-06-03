@@ -471,6 +471,23 @@ that's what we're here for.
   - Pure additive for infra — one new reference file. Single source of
     truth — do not fork.
 
+- `0.12.0` — content autopilot wiring (scheduled content production,
+  Phase 1).
+  - `scaffold-client` now registers a **conditional** daily
+    `content-loop` scheduled task (5:30am local, before the digest)
+    when the client has a content cadence >= 1 and `content_autopilot`
+    is on (default). It produces drafts on schedule and parks them at
+    the human approval gate — never approves, never publishes.
+  - `capture-stack` captures two new optional content-cadence keys:
+    `content_autopilot` (bool, default true) and `content_loop_cron`.
+  - Reconciles the scheduled-task documentation: the tasks
+    `scaffold-client` actually wires are the two approval jobs plus
+    this conditional content tick; the outreach/social loops are
+    operator-wired today (see CLAUDE.md).
+  - Pairs with `rockstarr-content` 0.11.0 (the `content-loop` skill +
+    background mode on the drafting skills). Publishing stays manual
+    (Phase 3).
+
 ## Backlog / future
 
 (Empty — every entry that was here in 0.7 is now shipped in 0.8.x.)

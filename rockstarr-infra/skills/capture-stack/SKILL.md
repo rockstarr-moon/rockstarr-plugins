@@ -289,6 +289,8 @@ exception.
 | `linkedin_newsletters_per_month` | integer | `0`     | How many LinkedIn newsletter sends per month?                                                       |
 | `records_videos`                 | boolean | `false` | Does the client record videos (YouTube / podcast / keynote) that Content Bot can transcribe and repurpose? |
 | `case_studies_per_quarter`       | integer | `1`     | How many case studies per quarter? Drives the `draft-case-study` interview cadence.                 |
+| `content_autopilot`              | boolean | `true`  | Should the daily content-loop produce drafts on schedule (parked at the human approval gate), or do you prefer to kick off each piece manually? Default on when any content cadence is set.                  |
+| `content_loop_cron`              | cron    | `"30 5 * * *"` | When the daily content-loop tick runs (client-local). Default 5:30am — just before the 6am approvals digest. Only used when `content_autopilot` is on and a content cadence is set.                |
 
 Rules:
 

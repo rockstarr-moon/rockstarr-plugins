@@ -93,15 +93,30 @@ it for everyone. Specifically:
 ## Scheduled tasks `scaffold-client` wires up
 
 When a new client installs this plugin, `scaffold-client` registers
-two recurring scheduled tasks via Cowork's scheduled-tasks MCP:
+recurring scheduled tasks via Cowork's scheduled-tasks MCP:
 
-- **Daily 6 am local** → `approvals-digest` (silent on empty days)
+- **Daily 6 am local** → `approvals-digest` (silent on empty days).
+  Always wired.
 - **Monday 8 am local** → `approvals-backlog-alert` (silent under
-  threshold)
+  threshold). Always wired.
+- **Daily 5:30 am local** → `rockstarr-content:content-loop`
+  (`content_loop_cron`). **Conditional** — only wired when the client
+  has a content cadence >= 1 AND `content_autopilot` is on (default).
+  The content tick produces drafts on schedule and parks them at the
+  human approval gate; it never approves or publishes. Scheduled just
+  before the 6am digest so produced drafts land in the same morning's
+  digest.
 
 `notify-reply-ready` is event-driven, not scheduled — it fires from
 the outreach plugins' `detect-replies` runs or directly from
 `rockstarr-reply:draft-reply`.
+
+**Note on the outreach / social schedules.** The outreach `daily-loop`
+and social `fill-week` skills describe their own scheduled runs, but
+`scaffold-client` does NOT currently register those — they are wired
+by the operator / the workspace today (the skill docs that imply
+otherwise predate this and are being reconciled). The tasks
+`scaffold-client` actually registers are the three above.
 
 If you touch `scaffold-client`, verify these tasks still register
 correctly. Re-running `scaffold-client` is supposed to be idempotent
