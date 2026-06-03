@@ -383,7 +383,22 @@ If only one TL angle is proposed for the month, skip the check.
 The diversity test only applies when multiple TL pieces ship in
 the same monthly cadence.
 
-## Interview step
+## Run modes (foreground / background)
+
+- **Foreground (default):** an operator is in chat — run the
+  Interview step below (surface rhyming enemies, summarize, ask for
+  picks via `AskUserQuestion`).
+- **Background (invoked by `plan-month` on the scheduled monthly
+  run):** there is no operator to ask. Write the ranked topics file
+  exactly as in foreground, **run the enemy-diversity check and FLAG
+  any rhyming pairs inline in the file** (add a clear note under each
+  flagged TL angle) rather than asking, and **do NOT run the picks
+  `AskUserQuestion`** — `plan-month` auto-selects the provisional pick
+  set and a human approves the calendar downstream. Return the file
+  path and stop. Never pick on the user's behalf in this skill; the
+  selection is `plan-month`'s job, the approval is the human's.
+
+## Interview step (foreground only)
 
 After writing the file:
 

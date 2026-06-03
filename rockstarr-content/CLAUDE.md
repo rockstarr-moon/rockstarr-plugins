@@ -60,7 +60,7 @@ Three properties follow:
 
 ## Skill groupings (mental map)
 
-16 active skills sort into eight groups (plus two deferred and one
+17 active skills sort into eight groups (plus two deferred and one
 moved-out — see README):
 
 1. **Strategy + audit (run on demand, typically quarterly)** —
@@ -103,8 +103,18 @@ moved-out — see README):
    routing untracked live blogs back through `publish-log`. First
    skills in this plugin to emit an `.xlsx` (bundled openpyxl
    writer); the publish log stays the source of truth.
-8. **Scheduled production / autopilot (as of v0.11)** —
-   `content-loop`. The daily background driver (content analog of
+8. **Scheduled production / autopilot** — `plan-month` (monthly,
+   v0.12) + `content-loop` (daily, v0.11). `plan-month` is the
+   monthly planning tick: it ideates in background, auto-selects a
+   provisional pick set (fill-to-cadence, quick-wins/pillars first
+   from the backlog, TL kept enemy-diverse), and produces a
+   **provisional** `content-calendar` staged for the human to edit
+   and approve — it never approves/drafts/publishes. Once the human
+   approves the calendar, `content-loop` (below) takes over the
+   daily drafting. Both are stop-at-gate, gated on `content_autopilot`,
+   wired as crons by `scaffold-client`.
+
+   `content-loop` is the daily background driver (content analog of
    the outreach `daily-loop`). Reads the approved
    `content-calendar`, infers each piece's state from the workspace
    files, and advances each due+unblocked item by ONE production

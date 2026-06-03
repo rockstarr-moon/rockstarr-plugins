@@ -227,12 +227,29 @@ Body structure:
   must be approved by YYYY-MM-06 or publish date slips").
 ```
 
+## Run modes (foreground / background)
+
+- **Foreground (default):** an operator is in chat — write the
+  calendar, summarize, and point them at the approval gate below.
+- **Background (invoked by `plan-month` on the scheduled monthly
+  run):** run unattended off the `Pick: yes` set `plan-month`
+  auto-selected. Write the calendar exactly as in foreground but mark
+  it **provisional / auto-proposed** in the front-matter (a `proposed_by:
+  plan-month` note alongside the usual `approval_status: pending`),
+  do NOT summarize in chat, and **stop**. Same as foreground, it does
+  NOT call `approve` — the calendar is staged pending for the human to
+  edit and approve. Background changes nothing about the scheduling
+  rules or the gate; it only skips the chat presentation and records
+  that the picks were auto-proposed.
+
 ## Approval gate
 
 After writing the file:
 
 1. Summarize in chat: picks per lane, first and last publish dates
-   of the month, any gaps or pushes.
+   of the month, any gaps or pushes. (Foreground only — background
+   stages silently and relies on `approvals-digest` + `plan-month`'s
+   notification to surface the pending calendar.)
 2. Tell the user this is a monthly gate — one approval for the
    whole month via `rockstarr-infra:approve`.
 3. Do not call `approve` yourself.
