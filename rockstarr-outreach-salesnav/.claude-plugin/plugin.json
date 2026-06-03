@@ -1,6 +1,6 @@
 {
   "name": "rockstarr-outreach-salesnav",
-  "version": "0.3.6",
+  "version": "0.4.0",
   "description": "Rockstarr AI LinkedIn outreach plugin for clients on Sales Navigator only — no third-party outreach tool. Supports full-sequence campaigns (connect request + three-message post-accept conversation) and connect-only campaigns. Drives Sales Nav via Chrome MCP and keeps all state in a single workbook under /rockstarr-ai/. Enforces a 20/day and 100/week connection cap. Every reply routes through rockstarr-reply for operator approval.",
   "author": {
     "name": "Rockstarr & Moon"

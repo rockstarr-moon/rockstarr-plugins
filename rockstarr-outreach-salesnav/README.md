@@ -64,7 +64,7 @@ one budget, not two.
 | `crawl-lead-list` | Idempotent crawl of a saved Sales Nav search via Chrome MCP — paginates, scrolls each row into view and waits for it to hydrate, commits only fully-hydrated rows to Leads, and resumes silently across re-invokes (URL-dedup against existing leads for the campaign). Enforces "one campaign per lead" across campaigns. |
 | `confirm-session` | Pre-flight: verify the browser is signed in to the client's LinkedIn. Gate on the entire daily loop. |
 | `preview-queue` | Daily preview file listing every action the bot plans to take today. Togglable via `stack.md`. |
-| `daily-connect` | Compute today's budget (20/day + 100/week math), round-robin across all active campaigns regardless of type, send BLANK connect requests via the `lead_profile_overflow` Chrome MCP path (direct nav to each lead's `/sales/lead/[urn]` page, then the overflow "..." menu — the only path that reliably survives Sales Nav's virtualized saved-search hydration). Pure-JS one-shot click pattern, 60–90s per-lead jitter, full page refresh every 3 successful sends. Four skip rules: Connect–Pending, 1st-degree, no-Connect-option, requires-email (terminal). Only skill that sends connects. |
+| `daily-connect` | Compute today's budget (20/day + 100/week math), round-robin across all active campaigns regardless of type, send BLANK connect requests via the `side_preview_overflow` Chrome MCP path (canonical as of v0.4: real-click the lead's name in the saved-search results — after per-row hydration — to open the side preview, then the in-preview overflow "..." → Connect → Send; `lead_profile_overflow` direct-nav is the proven fallback). **Real coordinate clicks throughout** — synthetic JS clicks are silently dropped by Sales Nav, worst on Windows (AI-176). 60–90s per-lead jitter, full page refresh every 3 successful sends. Four skip rules: Connect–Pending, 1st-degree, no-Connect-option, requires-email (terminal). Only skill that sends connects. |
 | `detect-accepts` | Detect newly accepted connections and flip `Leads.state=accepted`. Partition by campaign type — full-sequence accepts chain into `generate-message-tasks`; connect-only accepts are terminal and don't trigger any further tasks. |
 | `generate-message-tasks` | On accept (full-sequence campaigns only), seed a 3-step sequence at day-of-accept / +3 / +7. Refuses to run for connect-only campaign leads. |
 | `send-scheduled-messages` | Execute `message-step-N` and follow-up tasks due today via Sales Nav messaging. |
@@ -572,6 +572,30 @@ digest if it hasn't been approved by then.
   `rockstarr-outreach-interceptly` lands, both move to
   `rockstarr-infra/skills/_shared/` and the plugin-level wrappers call
   the shared source.
+- `0.4.0` — Chrome MCP click mechanism + path change (ClickUp AI-176).
+  A Windows client's Sales Nav flow was failing on synthetic JS clicks;
+  their Cowork environment moved Chrome MCP to real CDP mouse clicks
+  and the flow worked end to end. Changes:
+  - **Real coordinate clicks are now the click mechanism** for every
+    gated control in `daily-connect` and `send-scheduled-messages`
+    (the "..." overflow, Connect, Send, the lead's name). The v0.3
+    pure-JS one-shot click is deprecated as primary — synthetic JS
+    clicks are untrusted and Sales Nav drops them silently. Pure-JS
+    is a logged last resort only. Reading via `javascript_tool`
+    (hydration polls, degree-badge, the "Connect — Pending" check) is
+    unchanged.
+  - **`side_preview_overflow` is now the canonical path** (the
+    client-verified path), driven with real clicks + the per-row
+    hydration discipline `crawl-lead-list` already uses.
+    `lead_profile_overflow` (the proven v0.3 canonical) becomes the
+    fallback, one `stack.md` key away (`daily_connect_path`).
+  - Follows the new shared
+    `rockstarr-infra/skills/_shared/references/chrome-mcp-clicking.md`.
+  - **Not yet re-validated against live Sales Nav in-repo.** Sideload
+    and drive a test account before relying on the new path; flip
+    `daily_connect_path: lead_profile_overflow` if it underperforms.
+  - Pacing, budget math, em-dash verify, skip rules, retry semantics:
+    all unchanged.
 
 ## What this plugin does not do
 

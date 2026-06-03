@@ -41,10 +41,14 @@ the first full-volume rollout (RigTex) overturned that:
   partial rows. Both are fixed in 0.3.0 (see the README's
   Versioning section), but anyone touching these skills should
   assume Chrome MCP + Sales Nav is fragile, not stable, and design
-  defensively: per-row `scrollIntoView` + hydration polls,
-  pure-JS one-shot click patterns (refs from `read_page` expire
-  mid-batch), and full page refreshes after every 3 successful
-  sends to clear SPA state.
+  defensively: per-row `scrollIntoView` + hydration polls, **real
+  coordinate clicks** for every gated control (re-located before each
+  click — never reuse a stale ref/coordinate), and full page refreshes
+  after every 3 successful sends to clear SPA state. As of v0.4 the
+  click mechanism is real CDP clicks, not the old pure-JS one-shot
+  pattern — synthetic JS clicks are silently ignored by Sales Nav's
+  trusted-event gating (worst on Windows; AI-176). See the shared
+  `_shared/references/chrome-mcp-clicking.md`.
 - **The em-dash matters.** Verify regexes that look for "Connect —
   Pending" must use U+2014 explicitly. The ASCII hyphen produces
   silent false negatives on every confirmed send.
@@ -178,11 +182,16 @@ Key invariants to preserve:
 
 - **`confirm-session`.** Wrong-account sends are the top reputational risk.
 - **`daily-connect`'s budget math.** A bug here can blow past the LinkedIn cap and trigger a restriction warning.
-- **`daily-connect`'s UI path + pacing rules.** The
-  `lead_profile_overflow` canonical, pure-JS click pattern, em-dash
-  verify regex, and page-refresh-every-3-sends pacing are all
-  load-bearing under Chrome MCP. Each one was validated against
-  field-tested failure modes; reverting any of them re-introduces a
+- **`daily-connect`'s UI path + pacing rules.** The canonical path
+  (`side_preview_overflow` as of v0.4, with `lead_profile_overflow`
+  as the proven fallback), the **real-coordinate-click** mechanism,
+  the em-dash verify regex, and page-refresh-every-3-sends pacing are
+  all load-bearing under Chrome MCP. The path + click mechanism
+  changed in v0.4 (AI-176) and have NOT been re-validated against live
+  Sales Nav in-repo — sideload-test before relying on them, and keep
+  the `lead_profile_overflow` fallback one `stack.md` key away. The
+  pacing / em-dash / budget rules were validated against field-tested
+  failure modes; reverting any of them re-introduces a
   documented breakage (silent send failures, send-not-confirmed
   cascades, 3–5 send ceiling).
 - **The workbook schema.** Every skill reads it. Add columns at the end with sensible defaults; never rename or drop existing ones without coordinated updates across all skills.

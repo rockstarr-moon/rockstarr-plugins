@@ -1,6 +1,6 @@
 ---
 name: daily-connect
-description: "This skill should be used as the final send-step of the daily outreach loop, or when the user says \"run today's connects\", \"send today's Sales Nav connections\", or \"execute the connect loop\". Computes the day's budget (20/day + 100/week cap math) and round-robins across active campaigns. For each lead, navigates to the lead's /sales/lead/[urn] profile page (the canonical lead_profile_overflow path) and sends a BLANK connect via the overflow menu through Chrome MCP. Pacing is 60-90s jitter plus a full page refresh after every 3 successful sends. Four skip rules: Connect-Pending, 1st-degree, no-Connect-option, requires-email (terminal). This is the ONLY skill allowed to send connection requests in this plugin."
+description: "This skill should be used as the final send-step of the daily outreach loop, or when the user says \"run today's connects\", \"send today's Sales Nav connections\", or \"execute the connect loop\". Computes the day's budget (20/day, 100/week cap) and round-robins across active campaigns. For each lead, opens the side preview from the saved-search results (canonical side_preview_overflow path; direct /sales/lead/[urn] nav is the fallback) and sends a BLANK connect via the overflow menu, using REAL coordinate clicks through Chrome MCP (synthetic JS clicks are unreliable). Pacing: 60-90s jitter plus a full page refresh every 3 sends. Four skip rules: Connect-Pending, 1st-degree, no-Connect-option, requires-email (terminal). The only skill that sends connects."
 ---
 
 # daily-connect
@@ -61,61 +61,96 @@ If `confirm-session` has not passed this run, refuse and return
 
 ## Send loop
 
-### UI path — `lead_profile_overflow` is canonical
+### UI path — `side_preview_overflow` is canonical (as of v0.4)
 
-Two paths exist for "open the row's overflow and click Connect":
+Two paths exist for "open the lead's overflow and click Connect."
+**As of v0.4 the canonical path flipped to `side_preview_overflow`,
+driven with real coordinate clicks** (see "Click pattern" below and
+`rockstarr-infra/skills/_shared/references/chrome-mcp-clicking.md`).
+The field report behind the flip: a Windows client's Sales Nav flow
+was failing on synthetic JS clicks; once Chrome MCP issued real CDP
+mouse clicks, the human-natural side-preview path worked end to end
+(side preview opens → in-preview overflow → Connect → Send → Pending).
+ClickUp AI-176.
 
-- **`lead_profile_overflow` (canonical, Chrome MCP).** Navigate the
-  same tab directly to the lead's Sales Nav profile URL
-  (`/sales/lead/[urn]`, stored on the Leads row). The page loads
-  the lead's full record. The "..." overflow at the top of that
-  page exposes Connect / View profile / Add to map. **This is the
-  only path that reliably works inside Chrome MCP today.** The
-  direct navigation itself registers as a profile view in Sales
-  Nav, so it satisfies the dedup goal (the lead drops off
-  tomorrow's already-viewed-filtered saved search) as a side
-  effect of how the path works — no separate "click the name
-  first" step is needed.
-- **`side_preview_overflow` (fallback, human-natural; degraded
-  under Chrome MCP).** The path a human user actually clicks:
-  open the saved-search results page, click the lead's name to
-  populate the side preview pane on the right, click the "..." at
-  the top of the preview, click Connect. Inside Chrome MCP this
-  path is currently unreliable because Sales Nav virtualizes the
-  saved-search result rows and lazy-loads them on scroll — the
-  rows often don't hydrate within Chrome MCP's `Runtime.evaluate`
-  window, so the bot can't see the name link to click. Keep this
-  path documented as a fallback that the bot can attempt if
-  `lead_profile_overflow` fails on a specific lead, and revisit
-  promoting it to canonical only if Sales Nav fixes the
-  virtualization timing.
+- **`side_preview_overflow` (canonical).** The path a human actually
+  clicks: from the campaign's saved-search results page, real-click
+  the lead's name to populate the side preview pane on the right,
+  real-click the "..." at the top of the preview, real-click Connect.
+  The old blocker here was Sales Nav virtualizing the saved-search
+  rows so they didn't hydrate in Chrome MCP's window. That is handled
+  the same way `crawl-lead-list` handles it: **scroll each row into
+  view and poll for hydration before clicking its name** (per-row,
+  not whole-page). Real coordinate clicks then drive the rest. Clicking
+  the name opens the preview AND marks the lead viewed, so the
+  saved-search "already viewed" dedup still works as a side effect;
+  the workbook's `Leads.state` transition is the primary dedup
+  regardless.
+- **`lead_profile_overflow` (fallback; the proven v0.3 path).**
+  Navigate the same tab directly to the lead's Sales Nav profile URL
+  (`/sales/lead/[urn]`, stored on the Leads row). The "..." overflow
+  at the top of that page exposes Connect / View profile. The direct
+  navigation registers as a profile view, satisfying dedup with no
+  "click the name first" step. This was canonical through v0.3 and is
+  fully field-validated — use it as the fallback when a lead's row
+  won't hydrate in the side-preview path, or workspace-wide via the
+  `stack.md` key below if the side-preview path underperforms on a
+  given client's machine. **Whichever path is used, the click
+  mechanism is the same: real coordinate clicks, never synthetic JS.**
 
-The canonical / fallback split is also encoded in `stack.md`:
+The canonical / fallback split is encoded in `stack.md`:
 
 ```yaml
-daily_connect_path: lead_profile_overflow
-daily_connect_fallback_path: side_preview_overflow
+daily_connect_path: side_preview_overflow
+daily_connect_fallback_path: lead_profile_overflow
 ```
 
 The bot reads those keys at run start. If they're missing, default
-canonical = `lead_profile_overflow`, fallback = `side_preview_overflow`.
+canonical = `side_preview_overflow`, fallback = `lead_profile_overflow`.
+A client whose machine does better on the old path can set
+`daily_connect_path: lead_profile_overflow` without any code change.
 
-### Click pattern — pure JS, not element refs
+> **Validate on sideload.** This path + click-mechanism change has
+> not been re-run against live Sales Nav in this repo. Sideload and
+> drive a test Sales Nav account before relying on it for a client —
+> if the side-preview path misbehaves, flip the `stack.md` key to the
+> proven `lead_profile_overflow` fallback.
 
-Sales Nav's SPA invalidates element refs from `read_page` /
-`browser_snapshot` mid-batch — by the third or fourth send in a
-session, refs captured earlier in the run point at stale DOM nodes
-and clicks silently fail. **Use a pure-JS one-shot click pattern as
-the primary click method:** locate the target element inside
-`javascript_tool` (or `mcp__Claude_in_Chrome__javascript_tool`)
-by accessible name / aria-label / text content, dispatch the click
-in the same JS execution, and read the resulting DOM state from the
-same script's return value. Do not split "find ref" and "click ref"
-across two MCP calls.
+### Click pattern — real coordinate clicks (as of v0.4)
 
-If a pure-JS click fails (element not present, role mismatch),
-fall back to a fresh `find` + click — but never reuse a ref captured
-more than one MCP call ago.
+**Click every gated action control (the lead's name, the "…"
+overflow, Connect, Send Invitation) with a REAL coordinate click** —
+the Chrome MCP `computer` / click tool, which Cowork issues as a real
+CDP mouse event (trusted, full hover→mousedown→mouseup→click). See
+the canonical convention in
+`rockstarr-infra/skills/_shared/references/chrome-mcp-clicking.md`;
+this skill follows it.
+
+Why this replaced the old pure-JS click (v0.3 and earlier): a
+synthetic JS click (`element.click()`) is an UNtrusted event, and
+Sales Nav gates Connect / Send / the overflow menu on trusted pointer
+events — so the JS click registered on the DOM but Sales Nav did
+nothing, silently, worst on Windows (AI-176). A real coordinate click
+is trusted AND clicks a live screen position rather than a captured
+ref, so it also avoids the stale-ref problem the pure-JS pattern was
+originally introduced to dodge.
+
+Discipline (still required):
+
+- **Re-locate before each click.** Take a fresh screenshot / `find`
+  and click the current position. Never reuse a coordinate or ref
+  captured more than one action ago — Sales Nav's SPA mutates the DOM
+  mid-batch.
+- **Verify the effect after each click** (the modal opened, the
+  overflow shows "Connect — Pending"). Don't assume success.
+- `javascript_tool` is still the right tool for READING — degree-badge
+  reads, row hydration polling, the "Connect — Pending" string check.
+  Just not for activating the controls.
+
+If a control genuinely can't be reached by coordinate, a JS click is a
+logged last resort only (per the shared reference's fallback ladder) —
+and you must verify the action actually took effect, since a JS click
+on a gated control can no-op silently.
 
 ### Pacing — page refresh every 3 sends
 
@@ -144,27 +179,38 @@ For each lead selected:
 1. **Pre-flight the count.** If the cumulative send this run would
    push `connections_sent_this_week` past 100, stop immediately. Do
    not send one more than the ceiling.
-2. **Navigate to the lead's profile URL.** Read `lead_url` from the
-   Leads row (it is a `/sales/lead/[urn]...` URL). Navigate the same
-   tab there. Wait up to 15 seconds for the lead-page shell to
-   render (title element, headline, the "..." overflow button
-   present in the DOM). If the page does not render within 15
-   seconds — body still shows the `.initial-load-animation` SPA
-   loader, no headline — log this lead's URL + the timeout to
-   `_errors.md` with reason `lead_page_did_not_render`, skip the
-   lead, leave its task pending, run a single 90-second cooldown
-   nav to `https://www.linkedin.com/sales/`, then resume with the
-   next lead. The direct navigation itself is what registers as a
-   profile view, so the dedup goal is met even when the page hangs
-   on the loader.
+2. **Open the lead's side preview.** (Canonical
+   `side_preview_overflow` path.) On the campaign's saved-search
+   results page, locate the lead's row, **scroll it into view and
+   poll for hydration** (250ms cadence, 4000ms ceiling — same
+   per-row discipline as `crawl-lead-list`; the row's name link must
+   have a non-empty accessible name before you click it). When the
+   row is hydrated, **real-click the lead's name** to populate the
+   side preview pane on the right. Wait up to 15 seconds for the
+   preview to render (headline + the "..." overflow present). If the
+   row never hydrates or the preview never renders, log to
+   `_errors.md` with reason `row_did_not_hydrate`, skip the lead,
+   leave its task pending, run a single 90-second cooldown nav to
+   `https://www.linkedin.com/sales/`, then resume. Clicking the name
+   marks the lead viewed (dedup side effect); the workbook's
+   `Leads.state` transition is the primary dedup regardless.
+
+   *Fallback (`lead_profile_overflow`, the proven v0.3 path):* if the
+   row won't hydrate, or `stack.md.daily_connect_path` is set to
+   `lead_profile_overflow`, instead navigate the same tab directly to
+   the `lead_url` (`/sales/lead/[urn]`), wait up to 15s for the
+   lead-page shell, and read everything below from the lead page
+   rather than the preview. The direct nav itself registers the
+   profile view. Same real-coordinate-click mechanism throughout.
 3. **Inspect the degree badge.** Read the lead's degree (1st / 2nd
-   / 3rd / out-of-network) from the page header. Three skip cases
-   surface here, before the overflow even opens:
+   / 3rd / out-of-network) from the preview header (or the lead-page
+   header on the fallback path). Three skip cases surface here,
+   before the overflow even opens:
 
    - **1st-degree.** The lead is already a connection. Log a skip
      with reason `no_connect_option`, flip `Leads.state` to
      `connected` (it was already connected — workbook just lagged),
-     do NOT decrement the budget, continue. The page-view already
+     do NOT decrement the budget, continue. The view already
      dropped the lead from tomorrow's queue.
    - **A pending "Connect" badge** ("Pending" / "Invitation sent")
      visible on the header without opening the overflow. Log a
@@ -175,10 +221,10 @@ For each lead selected:
      skip with reason `no_connect_option`, leave `Leads.state =
      queued`, do NOT decrement the budget, continue.
 
-4. **Open the lead-page overflow menu.** Use the pure-JS click
-   pattern (see "Click pattern" above) to click the "..." button at
-   the top of the lead page. The dropdown should expose Connect,
-   View profile, and a handful of other actions.
+4. **Open the overflow menu.** Real-click (see "Click pattern" above)
+   the "..." button at the top of the side preview (or the lead page,
+   on the fallback path). The dropdown should expose Connect, View
+   profile, and a handful of other actions.
 
 5. **Inspect the Connect surface.** Two skip cases the overflow
    surfaces:
@@ -192,9 +238,9 @@ For each lead selected:
      `connect_pending_already_invited`, do NOT decrement the
      budget, press Escape, continue.
 
-6. **Click Connect.** Pure-JS click on the "Connect" item in the
-   dropdown. The "Send invitation" dialog opens. Two skip cases the
-   dialog surfaces:
+6. **Click Connect.** Real-click the "Connect" item in the dropdown.
+   The "Send invitation" dialog opens. Two skip cases the dialog
+   surfaces:
 
    - **"Add a personal note" modal that requires an email
      address** ("We need to verify they know you" / "Please enter
@@ -223,10 +269,10 @@ For each lead selected:
    the campaign file contains body copy under Message 1 — if it
    does, treat as a config error: log to `_errors.md` asking the
    client to re-approve, skip the lead, do not decrement the
-   budget. Click the blue "Send Invitation" button (pure-JS click).
+   budget. Real-click the blue "Send Invitation" button.
 
-9. **Verify the send.** Re-open the lead-page overflow within 3
-   seconds and look for **"Connect — Pending"** (with an em-dash,
+9. **Verify the send.** Re-open the overflow (preview or lead-page)
+   within 3 seconds and look for **"Connect — Pending"** (with an em-dash,
    not an ASCII hyphen — the literal UI string is the em-dash;
    regex must match `Connect\s*—\s*Pending`, not
    `Connect\s*-\s*Pending`). If "Connect — Pending" is present, the
@@ -244,7 +290,7 @@ For each lead selected:
     - `campaign_slug`
     - `note_sent` = `""` (always empty — Message 1 is blank by spec)
     - `source` = `sales_nav`
-    - `path` = `lead_profile_overflow` (or `side_preview_overflow`
+    - `path` = `side_preview_overflow` (or `lead_profile_overflow`
       if the bot used the fallback path on this lead)
 
 11. **Update Leads.** `state = connected`, `date_connected = today`.
@@ -256,8 +302,9 @@ For each lead selected:
     - Increment a per-run successful-send counter. If the counter
       reaches 3, perform a full page refresh: navigate to
       `https://www.linkedin.com/sales/`, wait 10 seconds, reset the
-      counter to 0. The next lead's navigation in step 2 will load
-      its profile from the freshly-loaded shell.
+      counter to 0. Step 2 then re-opens the campaign's saved-search
+      results page (or, on the fallback path, the next lead's profile)
+      from the freshly-loaded shell.
 
 ### Retry semantics for `send_not_confirmed`
 
@@ -334,20 +381,25 @@ Return a structured summary to the caller:
   the same modal every time. `requires_email` is terminal — flip
   `Leads.state` to `requires_email_skip` and cancel the connect
   task. The lead is unreachable through a blank invite forever.
-- Do not reuse element refs captured from `read_page` /
-  `browser_snapshot` across more than one MCP call. The Sales Nav
-  SPA invalidates them mid-batch. Use the pure-JS one-shot click
-  pattern (see "Click pattern") as the primary; a fresh find is
-  only acceptable as a one-shot fallback when the JS click fails.
+- Do not reuse element refs / coordinates captured from `read_page`
+  / `browser_snapshot` / a screenshot across more than one MCP call.
+  The Sales Nav SPA invalidates them mid-batch. Re-locate before each
+  click and use a **real coordinate click** (see "Click pattern").
+- Do not click gated controls with synthetic JS (`element.click()` /
+  `dispatchEvent`). Sales Nav ignores untrusted events silently
+  (worst on Windows — AI-176). A JS click is a logged last resort
+  only, and only when the control can't be reached by coordinate.
 - Do not skip the Rule B page refresh after every 3 successful
   sends. Even at 60–90s per-lead jitter, the SPA's JS state
   accumulates and the send pipeline degrades to silent failures.
   Passive cooldowns (sleeping without a reload) do not clear this.
-- Do not use the `side_preview_overflow` path as the primary in
-  Chrome MCP today. Sales Nav virtualizes the saved-search rows
-  and they do not hydrate inside Chrome MCP's `Runtime.evaluate`
-  window reliably. Treat `side_preview_overflow` as the documented
-  fallback only.
+- Do not skip the per-row hydration discipline on the
+  `side_preview_overflow` path. Sales Nav virtualizes the
+  saved-search rows; scroll each row into view and poll for
+  hydration before real-clicking its name (same as
+  `crawl-lead-list`). If a row won't hydrate, fall back to the
+  `lead_profile_overflow` direct-nav path for that lead — don't
+  click a half-rendered row.
 - Do not assume "Connect — Pending" uses an ASCII hyphen. The
   literal UI string is an em-dash (Unicode U+2014). The verify
   regex must match the em-dash explicitly, e.g.

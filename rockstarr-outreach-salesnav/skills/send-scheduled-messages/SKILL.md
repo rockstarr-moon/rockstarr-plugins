@@ -1,6 +1,6 @@
 ---
 name: send-scheduled-messages
-description: "This skill should be used in the daily outreach loop after generate-message-tasks, or when the user says \"send today's scheduled Sales Nav messages\" or \"run the sequence sends\". Executes every message-step-N and follow-up task due today: resolves [first_name]/[company] placeholders, sends via Sales Nav messaging through Chrome MCP using the pure-JS one-shot click pattern, logs to Messages. Paces at 60-90s jitter plus full page refresh after every 3 sends (clears SPA state). Refuses to run if confirm-session has not passed. Aborts an individual send if any literal `{...}` remains after substitution."
+description: "This skill should be used in the daily outreach loop after generate-message-tasks, or when the user says \"send today's scheduled Sales Nav messages\" or \"run the sequence sends\". Executes every message-step-N and follow-up task due today: resolves [first_name]/[company] placeholders, sends via Sales Nav messaging through Chrome MCP using real coordinate clicks (not synthetic JS clicks), logs to Messages. Paces at 60-90s jitter plus full page refresh after every 3 sends (clears SPA state). Refuses to run if confirm-session has not passed. Aborts an individual send if any literal `{...}` remains after substitution."
 ---
 
 # send-scheduled-messages
@@ -137,12 +137,17 @@ from the approved campaign file at send time (or drafted fresh via
       log to `_errors.md`, mark the task `cancelled` with reason
       `thread_missing`, flip Leads.state to `opted-out`, cancel
       remaining sequence tasks for this lead.
-   c. **Send the body.** Paste into the message composer using the
-      pure-JS one-shot click pattern (see `daily-connect`'s "Click
-      pattern" section — same rule: do not reuse element refs from
-      `read_page` / `browser_snapshot` across MCP calls, the Sales
-      Nav SPA invalidates them mid-batch). Submit. Verify the message
-      appears in the thread after send.
+   c. **Send the body.** Type the body into the message composer,
+      then **real-click the Send button** (the Chrome MCP `computer`
+      click — a real CDP click, not a synthetic JS click; Sales Nav
+      gates Send on trusted events, worst on Windows). See
+      `daily-connect`'s "Click pattern" and the shared
+      `rockstarr-infra/skills/_shared/references/chrome-mcp-clicking.md`.
+      Re-locate the Send button immediately before clicking — do not
+      reuse element refs / coordinates from `read_page` /
+      `browser_snapshot` across MCP calls (the Sales Nav SPA
+      invalidates them mid-batch). Verify the message appears in the
+      thread after send.
    d. **Write to Messages.** Row per send:
       - `date` = now (ISO timestamp)
       - `lead_url`
