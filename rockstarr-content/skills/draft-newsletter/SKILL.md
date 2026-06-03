@@ -253,6 +253,20 @@ and surface it in the chat summary with the subject-line picks.
 
 3. Do not call `approve` yourself.
 
+## Run modes (foreground / background)
+
+Normally this runs **foreground** — an operator is in chat and gets
+the summary above. When `content-loop` invokes it on the scheduled
+run (**background mode**), run non-interactively: do the full
+production pipeline unchanged (the mandatory stop-slop pass), write
+the artifact to `03_drafts/content/` with
+`approval_status: pending`, return the path, and **stop**. Do NOT
+present inline, do NOT block on a question (take the safe default, or
+stage with the gap flagged in front-matter and stop), and **never
+approve** — approval is always a human action via
+`rockstarr-infra:approve`. Both modes are stage-and-stop; only the
+chat presentation differs.
+
 ## What NOT to do
 
 - Do not draft a newsletter longer than ~1000 words. If the idea

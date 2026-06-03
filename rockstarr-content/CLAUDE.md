@@ -60,7 +60,7 @@ Three properties follow:
 
 ## Skill groupings (mental map)
 
-15 active skills sort into seven groups (plus two deferred and one
+16 active skills sort into eight groups (plus two deferred and one
 moved-out — see README):
 
 1. **Strategy + audit (run on demand, typically quarterly)** —
@@ -103,6 +103,31 @@ moved-out — see README):
    routing untracked live blogs back through `publish-log`. First
    skills in this plugin to emit an `.xlsx` (bundled openpyxl
    writer); the publish log stays the source of truth.
+8. **Scheduled production / autopilot (as of v0.11)** —
+   `content-loop`. The daily background driver (content analog of
+   the outreach `daily-loop`). Reads the approved
+   `content-calendar`, infers each piece's state from the workspace
+   files, and advances each due+unblocked item by ONE production
+   step (outline on its date; draft on its date once the outline is
+   approved), invoking the drafting skills in **background mode**.
+   It is **stop-at-gate**: it stages drafts pending and never
+   approves, never publishes. Bounded to ~1 production step per run
+   (the scheduled-task turn ceiling). `scaffold-client` wires its
+   daily cron when `content_autopilot` is on (default) and a content
+   cadence is set; the existing `approvals-digest` surfaces what it
+   produces. Publishing autopilot is a later phase (the publish
+   connectors are still deferred). NOT autopilot-eligible:
+   `draft-case-study` (interview), `ideate-topics`/`content-calendar`
+   (human-gated planning), and the publish lanes.
+
+   **Background mode.** The drafting skills (`outline-blog`,
+   `draft-blog`, the TL pair, `draft-newsletter`) each carry a
+   "Run modes" note: foreground (operator in chat) vs background
+   (invoked by `content-loop` — produce + stage pending + don't
+   present inline + never approve). The pipeline (domain pass →
+   stop-slop) is identical in both; only the chat presentation
+   differs. This is the same foreground/background split the outreach
+   plugins use.
 
 `draft-polls` moved out to `rockstarr-social` in v0.7 — short-form
 social lives there now. The workspace conventions (`polls_cadence`

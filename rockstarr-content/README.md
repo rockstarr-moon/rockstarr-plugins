@@ -56,6 +56,40 @@ matching field.
   `content-calendar`, and `outline-blog` are all backlog-aware
   — strategy decides which topics matter; the monthly skills
   sequence them.
+## v0.11 — Scheduled content production (autopilot, Phase 1)
+
+Content stopped requiring a human to kick off every outline and draft
+on its calendar date. A daily scheduled tick now does the *production*
+and parks each piece at the next *human gate*.
+
+- **New skill: `content-loop`.** The daily background driver (the
+  content analog of the outreach `daily-loop`). It reads the approved
+  monthly `content-calendar`, infers each piece's state from the
+  workspace files, and advances each due-and-unblocked item by ONE
+  production step — outline on its date, draft once the outline is
+  approved — invoking the drafting skills in background mode. Bounded
+  to ~1 step per run (the scheduled-task turn ceiling).
+- **Stop-at-gate, always.** The loop stages drafts `pending` and
+  **never approves and never publishes.** If a draft is due but its
+  outline isn't approved, it records the block and leaves the nudge to
+  the existing `approvals-digest` / `approvals-backlog-alert`. Approval
+  and publishing stay human.
+- **Background mode on the drafting skills.** `outline-blog`,
+  `draft-blog`, the TL pair, and `draft-newsletter` gained a "Run
+  modes" note — foreground (operator in chat) vs background (produced
+  by `content-loop`, staged, not presented). Same pipeline; only the
+  chat presentation differs.
+- **Wired at onboarding.** `rockstarr-infra` 0.12.0's `scaffold-client`
+  registers the daily cron (5:30am local, before the digest) when
+  `content_autopilot` is on (default) and a content cadence is set;
+  `capture-stack` captures `content_autopilot` + `content_loop_cron`.
+- **Not autopilot-eligible:** case studies (interview-driven),
+  `ideate-topics` / `content-calendar` (human-gated planning — a later
+  phase may auto-produce the topic list, still human-approved), and
+  publishing (Phase 3 — the publish connectors are still deferred).
+- **Not yet validated against a live scheduled run** — sideload and
+  let the cron fire before relying on it for a client.
+
 ## v0.10 — Master list of content (local Excel tracker)
 
 The agency's old Google-Sheets "Master List of Content" became a
@@ -332,6 +366,7 @@ drafts generated.
 | `verify-linkedin-newsletter` | NEW (0.9) | Go-live check: confirms a scheduled LinkedIn newsletter edition actually posted within ~3 days of its expected date (from `content-calendar` / `_publish.log`), reads the author's newsletter on LinkedIn via Chrome MCP, reports the result to the workspace, and can alert the strategist via `rockstarr-infra:send-notification`. No ClickUp. |
 | `master-list-create` | NEW (0.10) | Generates `06_reports/master-list-of-content.xlsx` — a local Excel tracker of long-form content (Blog/Case study) and where it was reposted — FROM the canonical `05_published/_publish.log` (+ per-piece front-matter). Four canonical columns (Content type, Posted on LinkedIn newsletter, Posted in email newsletter, URL of final blog) plus Title, Published date, Slug; one row per piece via slug join. Bundled openpyxl writer (header bold+frozen, Blog/Case-study dropdown). Regenerable export, never hand-maintained — the publish log stays the source of truth. Local + per-client (no Google Drive). |
 | `master-list-blog-audit` | NEW (0.10) | Crawls the client's live blog sitemap (Googlebot UA, same approach as `seo-site-audit`), diffs live blog URLs against `_publish.log`/the master list, and reports untracked live blogs. Does not edit the workbook: confirmed gaps route through `rockstarr-infra:publish-log`, then `master-list-create` regenerates. Read-only against the live site; waits for operator confirmation before logging. |
+| `content-loop` | NEW (0.11) | The daily **scheduled** content driver (autopilot). Reads the approved `content-calendar`, infers each piece's state from the workspace files, and advances each due+unblocked item by ONE production step (outline on its date; draft once the outline is approved), running the drafting skills in background mode. **Stop-at-gate: stages drafts pending, never approves, never publishes.** Bounded to ~1 step/run (turn ceiling). Wired by `scaffold-client` as a daily cron when `content_autopilot` is on (default) + a content cadence is set; produced drafts surface in the next `approvals-digest`. Not autopilot-eligible: case studies (interview), ideate/calendar (human-gated), publishing (Phase 3). |
 | `publish-wp` | DEFER | WordPress publish connector. Builds when first client's stack lights up. |
 | `publish-ga` | DEFER | GrowthAmp blog publish connector. Builds when first client's stack lights up. |
 
