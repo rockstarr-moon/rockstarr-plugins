@@ -313,6 +313,15 @@ that's what we're here for.
   diagnosis** — the drafting patterns are author-facing, the
   audit checklist is diagnostic-facing, one canonical source.
   Do not fork — update in place.
+- `skills/_shared/references/chrome-mcp-clicking.md` — **new in
+  0.11.0.** Canonical rule for HOW to click when a skill drives a web
+  app through Chrome MCP: click gated action controls with real
+  coordinate/CDP clicks (trusted events); reserve `javascript_tool`
+  for reading/extraction and non-gated DOM work (formatting,
+  scrollIntoView, value reads). Prevents the silent synthetic-click
+  failures that broke a Windows client's Sales Nav flow (AI-176). Read
+  by every browser-driving skill — both outreach variants, social, and
+  the content LinkedIn-newsletter lane. Do not fork.
 - `skills/_shared/stop-slop/` — MIT-licensed stop-slop skill. Every
   prose-producing Rockstarr bot must run this as the final pass before
   writing a draft to `03_drafts/`. Shared SKILL.md + `references/`
@@ -446,6 +455,21 @@ that's what we're here for.
     delta is one new section plus broadened front-matter in an
     existing shared reference. Single source of truth — do not
     fork.
+- `0.11.0` — new shared reference
+  `skills/_shared/references/chrome-mcp-clicking.md` (ClickUp AI-176).
+  - Canonical convention for HOW to click via Chrome MCP: real
+    coordinate/CDP clicks (trusted events) for gated action controls;
+    `javascript_tool` reserved for reading/extraction and non-gated
+    DOM work. Prevents the silent synthetic-click failures that broke
+    a Windows client's Sales Nav flow.
+  - Read by every browser-driving skill. Consumers updated in the same
+    coordinated PR: `rockstarr-outreach-salesnav` 0.4.0 (click
+    mechanism + path), `rockstarr-outreach-interceptly` 0.2.6
+    (apply-label + send-message). `rockstarr-social` was already
+    compliant (real `find`-then-click); `rockstarr-content`'s
+    LinkedIn-newsletter lane already uses real clicks.
+  - Pure additive for infra — one new reference file. Single source of
+    truth — do not fork.
 
 ## Backlog / future
 
