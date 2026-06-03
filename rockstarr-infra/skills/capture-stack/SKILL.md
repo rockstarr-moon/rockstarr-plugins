@@ -291,6 +291,7 @@ exception.
 | `case_studies_per_quarter`       | integer | `1`     | How many case studies per quarter? Drives the `draft-case-study` interview cadence.                 |
 | `content_autopilot`              | boolean | `true`  | Should the daily content-loop produce drafts on schedule (parked at the human approval gate), or do you prefer to kick off each piece manually? Default on when any content cadence is set.                  |
 | `content_loop_cron`              | cron    | `"30 5 * * *"` | When the daily content-loop tick runs (client-local). Default 5:30am — just before the 6am approvals digest. Only used when `content_autopilot` is on and a content cadence is set.                |
+| `content_plan_cron`              | cron    | `"0 6 1 * *"`  | When the monthly plan-month tick runs (client-local). Default 6am on the 1st — proposes the month's topics + a provisional calendar for approval. Only used when `content_autopilot` is on and a content cadence is set. |
 
 Rules:
 

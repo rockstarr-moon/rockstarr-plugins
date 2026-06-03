@@ -106,6 +106,10 @@ recurring scheduled tasks via Cowork's scheduled-tasks MCP:
   human approval gate; it never approves or publishes. Scheduled just
   before the 6am digest so produced drafts land in the same morning's
   digest.
+- **Monthly, 6 am local on the 1st** → `rockstarr-content:plan-month`
+  (`content_plan_cron`). **Conditional** — same gating as above
+  (Phase 2). Proposes the month's topics + a provisional calendar for
+  the human to edit and approve; never approves, drafts, or publishes.
 
 `notify-reply-ready` is event-driven, not scheduled — it fires from
 the outreach plugins' `detect-replies` runs or directly from

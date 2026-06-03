@@ -487,6 +487,15 @@ that's what we're here for.
   - Pairs with `rockstarr-content` 0.11.0 (the `content-loop` skill +
     background mode on the drafting skills). Publishing stays manual
     (Phase 3).
+- `0.13.0` — content autopilot Phase 2 (monthly planning).
+  - `scaffold-client` now also registers a **conditional** monthly
+    `plan-month` task (6am on the 1st, `content_plan_cron`), same
+    gating as the daily content-loop. It proposes the month's topics +
+    a provisional calendar for human approval — never approves,
+    drafts, or publishes.
+  - `capture-stack` captures `content_plan_cron`.
+  - Pairs with `rockstarr-content` 0.12.0 (the `plan-month` skill +
+    background mode on ideate-topics / content-calendar).
 
 ## Backlog / future
 

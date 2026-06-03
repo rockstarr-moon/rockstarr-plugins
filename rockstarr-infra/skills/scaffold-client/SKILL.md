@@ -178,10 +178,10 @@ Create these directories and placeholder files under the workspace root:
    helper simply ignores unknown keys.
 
 8. Wire the recurring scheduled tasks. Two approval-notification
-   jobs always exist; a third **content-autopilot** job is added
-   when this client publishes content (see the conditional block
-   below). Use `mcp__scheduled-tasks__create_scheduled_task` to
-   register each.
+   jobs always exist; two **content-autopilot** jobs (a daily
+   `content-loop` and a monthly `plan-month`) are added when this
+   client publishes content (see the conditional block below). Use
+   `mcp__scheduled-tasks__create_scheduled_task` to register each.
 
    Before creating, call `mcp__scheduled-tasks__list_scheduled_tasks`
    and check whether a task with the matching `taskName` already
@@ -240,10 +240,25 @@ Create these directories and placeholder files under the workspace root:
                     silently."
    ```
 
-   Skip this task entirely if every content cadence is 0 or
-   `content_autopilot` is `false` — don't register a loop with
-   nothing to do. The loop only ever produces drafts and stops at the
-   human approval gate; it never approves or publishes.
+   And the monthly planning tick (Phase 2):
+
+   ```
+   taskName       = "plan-month"
+   cronExpression = stack.md.content_plan_cron      # default "0 6 1 * *"
+                    # 6:00 am local on the 1st — so the proposed plan
+                    # is waiting at the start of the month.
+   prompt         = "Run the plan-month skill in rockstarr-content.
+                    Ideate this month's topics, auto-select a
+                    provisional pick set, and produce a PROVISIONAL
+                    content calendar staged for approval. Do not
+                    approve, draft, or publish."
+   ```
+
+   Skip BOTH tasks entirely if every content cadence is 0 or
+   `content_autopilot` is `false` — don't register loops with nothing
+   to do. Neither task ever approves or publishes: `plan-month`
+   proposes a calendar and stops at the approval gate; `content-loop`
+   produces drafts and stops at the approval gate.
 
    In the output summary, note for each task: created vs.
    already-existed, the resolved cron, and the local time it
