@@ -56,6 +56,34 @@ matching field.
   `content-calendar`, and `outline-blog` are all backlog-aware
   — strategy decides which topics matter; the monthly skills
   sequence them.
+## v0.10 — Master list of content (local Excel tracker)
+
+The agency's old Google-Sheets "Master List of Content" became a
+workspace-native, generated artifact. The plugin already tracks what
+shipped in `05_published/_publish.log`; this surfaces that as a
+human-friendly Excel workbook instead of a parallel hand-maintained
+sheet.
+
+- **New skill: `master-list-create`.** Generates
+  `06_reports/master-list-of-content.xlsx` from the canonical publish
+  log + per-piece front-matter — one row per long-form piece, the four
+  canonical columns (Content type, Posted on LinkedIn newsletter,
+  Posted in email newsletter, URL of final blog) plus Title / Published
+  date / Slug. It's a regenerable export, not a source of truth; re-run
+  to refresh. First skill in this plugin to emit an `.xlsx` (bundled
+  openpyxl writer handles the header styling + Blog/Case-study
+  dropdown deterministically).
+- **New skill: `master-list-blog-audit`.** Crawls the client's live
+  sitemap and reconciles it against the publish log, reporting any live
+  blog not tracked. Gaps route back through `rockstarr-infra:publish-log`
+  (the canonical store), then `master-list-create` regenerates — the
+  workbook is never hand-edited. Shares the Googlebot-UA fetch approach
+  with `seo-site-audit`.
+- **De-agency-fied from the source process.** The original created a
+  Google Sheet in Rockstarr's Drive keyed off ClickUp + Rachel. This
+  version is a local, per-client file in `/rockstarr-ai/` — no Drive,
+  no ClickUp, no sharing step.
+
 ## v0.9 — LinkedIn newsletter go-live
 
 The LinkedIn-newsletter lane stopped being a plan and became a
@@ -302,6 +330,8 @@ drafts generated.
 | `draft-article` | REMOVED (0.5) | Deprecated v0.2 shim deleted on schedule. Any saved workflow still referencing `draft-article` returns a "not found" error and routes the user to `outline-blog` or `outline-thought-leadership` directly. |
 | `publish-linkedin-newsletter` | NEW (0.9) | Republishes an approved TL piece from `04_approved/content/` as a LinkedIn newsletter edition on the author's personal account, via Chrome MCP automation of the article editor. Gated on `linkedin_newsletters_per_month >= 1`. Carries the full editor gotcha catalog (publishing-target reset, H3 auto-list, `cmd+a` time-field wipe, Discard traps, 90-day cap) in `references/linkedin-article-formatting.md`. Three human stop-points: cover-image upload, intro-post approval (3-sentence question-led, stop-slopped), final Schedule click. Records via `rockstarr-infra:publish-log`. Account identity / newsletter name / schedule are prompted at run time (personal-account items, not stack config). |
 | `verify-linkedin-newsletter` | NEW (0.9) | Go-live check: confirms a scheduled LinkedIn newsletter edition actually posted within ~3 days of its expected date (from `content-calendar` / `_publish.log`), reads the author's newsletter on LinkedIn via Chrome MCP, reports the result to the workspace, and can alert the strategist via `rockstarr-infra:send-notification`. No ClickUp. |
+| `master-list-create` | NEW (0.10) | Generates `06_reports/master-list-of-content.xlsx` — a local Excel tracker of long-form content (Blog/Case study) and where it was reposted — FROM the canonical `05_published/_publish.log` (+ per-piece front-matter). Four canonical columns (Content type, Posted on LinkedIn newsletter, Posted in email newsletter, URL of final blog) plus Title, Published date, Slug; one row per piece via slug join. Bundled openpyxl writer (header bold+frozen, Blog/Case-study dropdown). Regenerable export, never hand-maintained — the publish log stays the source of truth. Local + per-client (no Google Drive). |
+| `master-list-blog-audit` | NEW (0.10) | Crawls the client's live blog sitemap (Googlebot UA, same approach as `seo-site-audit`), diffs live blog URLs against `_publish.log`/the master list, and reports untracked live blogs. Does not edit the workbook: confirmed gaps route through `rockstarr-infra:publish-log`, then `master-list-create` regenerates. Read-only against the live site; waits for operator confirmation before logging. |
 | `publish-wp` | DEFER | WordPress publish connector. Builds when first client's stack lights up. |
 | `publish-ga` | DEFER | GrowthAmp blog publish connector. Builds when first client's stack lights up. |
 

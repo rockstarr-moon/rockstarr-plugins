@@ -60,7 +60,7 @@ Three properties follow:
 
 ## Skill groupings (mental map)
 
-13 active skills sort into six groups (plus two deferred and one
+15 active skills sort into seven groups (plus two deferred and one
 moved-out — see README):
 
 1. **Strategy + audit (run on demand, typically quarterly)** —
@@ -94,6 +94,15 @@ moved-out — see README):
    These are the realized members of the deferred-`publish-*`
    class. They drive a browser and keep humans in the loop for the
    cover image, the intro post, and the final Schedule click.
+7. **Content tracking (as of v0.10)** — `master-list-create`
+   generates `06_reports/master-list-of-content.xlsx` (a local
+   Excel tracker of long-form content + repost channels) FROM the
+   canonical `05_published/_publish.log` — it's a regenerable
+   export, never hand-maintained. `master-list-blog-audit` crawls
+   the client's live sitemap and reconciles it against the log,
+   routing untracked live blogs back through `publish-log`. First
+   skills in this plugin to emit an `.xlsx` (bundled openpyxl
+   writer); the publish log stays the source of truth.
 
 `draft-polls` moved out to `rockstarr-social` in v0.7 — short-form
 social lives there now. The workspace conventions (`polls_cadence`
