@@ -122,6 +122,14 @@ by the operator / the workspace today (the skill docs that imply
 otherwise predate this and are being reconciled). The tasks
 `scaffold-client` actually registers are the three above.
 
+**Toggling content autopilot after onboarding.** `set-content-autopilot`
+(0.14.0) is the one-prompt switch: it flips `stack.md.content_autopilot`
+AND registers/removes the `content-loop` + `plan-month` tasks to match,
+reusing scaffold-client's canonical specs (single source of truth). OFF
+is effective immediately regardless of the tasks because both autopilot
+drivers check the flag at runtime; ON requires a content cadence. It
+does not change cron times (that's `capture-stack`).
+
 If you touch `scaffold-client`, verify these tasks still register
 correctly. Re-running `scaffold-client` is supposed to be idempotent
 — it should not double-register tasks.

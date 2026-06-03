@@ -31,6 +31,7 @@ depend on files produced by these skills.
 | `approve`                   | Promote a draft from `03_drafts/` to `04_approved/` with approval metadata.                                                                                      |
 | `publish-log`               | Record a shipped output in `05_published/<channel>/` for metrics review.                                                                                         |
 | `request-support`           | Draft + send a support email to `ai_support@rockstarrandmoon.com` on client approval.                                                                            |
+| `set-content-autopilot`     | One-prompt switch for scheduled content production: flips `stack.md.content_autopilot` and registers/removes the `content-loop` (daily) + `plan-month` (monthly) tasks to match, reusing scaffold-client's canonical specs. `on` / `off` / `status`. OFF is immediate (the drivers check the flag at runtime); ON needs a content cadence. Doesn't change cron times or draft/approve/publish. |
 | `approvals-digest`          | Daily 6 am cross-bot email to the client listing items pending approval, sorted most-recent first, with `claude://` deep-links per item. Silent on empty days.    |
 | `approvals-backlog-alert`   | Weekly Monday 8 am email to the client's Rockstarr strategist when pending count exceeds `[approvals].strategist_alert_threshold` (default 25). Silent under it. |
 | `notify-reply-ready`        | Urgent email to the client when an outreach reply lands and a draft is staged. Per-reply card with lead context, inbound excerpt, classification, drafted body, and `claude://` deep-link. Routed via `notify_type=urgent`. Called by outreach `detect-replies` (batched) or `rockstarr-reply:draft-reply` (single). |
@@ -496,6 +497,14 @@ that's what we're here for.
   - `capture-stack` captures `content_plan_cron`.
   - Pairs with `rockstarr-content` 0.12.0 (the `plan-month` skill +
     background mode on ideate-topics / content-calendar).
+- `0.14.0` — `set-content-autopilot` skill. A one-prompt toggle for
+  scheduled content production: flips `stack.md.content_autopilot` and
+  registers/removes the `content-loop` + `plan-month` scheduled tasks
+  to match (reusing scaffold-client's canonical specs — single source
+  of truth). `on` / `off` / `status`. OFF is immediate because both
+  autopilot drivers check the flag at runtime; ON requires a content
+  cadence. Lets clients turn autopilot on/off after onboarding without
+  hand-editing config. Content-only — no rockstarr-content change.
 
 ## Backlog / future
 
