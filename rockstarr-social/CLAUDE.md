@@ -27,7 +27,7 @@ is in.
 
 ## Skill groupings (mental map)
 
-7 active skills sort into four groups (plus two deferred):
+8 active skills sort into five groups (plus two deferred):
 
 1. **Pure drafting** — `draft-social` (single short-form post),
    `fill-week` (weekly batch via `draft-social` loop),
@@ -38,7 +38,13 @@ is in.
    credit-cycle page-follow invites with identity gate),
    `li-comment-check` (daily comment monitor + reply workflow,
    per-comment approval gate).
-4. **One-off interview-driven deliverables** — `linkedin-profile-audit`
+4. **Inventory / discovery** — `inventory-social` (as of v0.2):
+   read-only crawl of each enabled channel for posts in a lookback
+   window (default last 3 months), backfilling untracked ones through
+   `rockstarr-infra:publish-log`. Never posts/comments/edits. Dispatched
+   by `rockstarr-orchestrator:baseline-audit` (it passes the window);
+   the social half of the cross-channel "what already exists" snapshot.
+5. **One-off interview-driven deliverables** — `linkedin-profile-audit`
    (eight-item playbook + two inline interviews, produces a
    workspace-markdown deliverable for personal profiles only).
 

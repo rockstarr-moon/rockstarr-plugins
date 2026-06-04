@@ -48,6 +48,12 @@ comment-check workflow.
   accounts, drafts in-voice replies, gates every send on
   per-comment operator approval, and (optionally) closes the
   matching ClickUp task on success.
+- **Social inventory (new in v0.2).** `inventory-social` reads
+  each enabled channel for posts in a lookback window (default
+  last 3 months) and backfills the untracked ones through
+  `rockstarr-infra:publish-log` — read-only, never posts. It's the
+  social half of `rockstarr-orchestrator:baseline-audit`, the
+  cross-channel "where things stand" starting snapshot.
 
 ## Skills
 
@@ -59,6 +65,7 @@ comment-check workflow.
 | `draft-polls` | MOVED from rockstarr-content v0.6 | Batched 10-poll sets per persona; structural lane with hard char limits + altitude check. |
 | `invite-page-followers` | MOVED from rockstarr-outreach-salesnav v0.1.6 | Monthly LinkedIn page-follow invites with identity gate, cycle dedup, and run log. |
 | `li-comment-check` | NEW v0.1 | Daily comment monitor + reply workflow across one or more managed accounts. Operator-gated sends. Optional ClickUp closure. |
+| `inventory-social` | NEW v0.2 | Read-only inventory of already-published social posts in a lookback window (default last 3 months) across enabled channels; diffs vs the publish log and backfills untracked ones through `rockstarr-infra:publish-log`. Never posts/comments/edits. Dispatched by `rockstarr-orchestrator:baseline-audit` for the cross-channel "what already exists" snapshot. |
 
 Deferred for V1.1+:
 

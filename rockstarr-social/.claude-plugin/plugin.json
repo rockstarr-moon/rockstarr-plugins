@@ -1,6 +1,6 @@
 {
   "name": "rockstarr-social",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "Rockstarr AI social plugin. Drafts short-form social posts (LinkedIn default; X and Instagram optional) in the client's approved voice, builds balanced weekly batches, and exports to the client's scheduler (Publer or GrowthAmp planner). Also owns LinkedIn polls, monthly page-follow invites, and a daily comment-check workflow with per-comment approval. Every batch flows through rockstarr-infra:approve — the bot never posts directly.",
   "author": {
     "name": "Rockstarr & Moon"
