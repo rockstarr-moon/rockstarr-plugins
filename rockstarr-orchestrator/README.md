@@ -22,6 +22,11 @@ For the full vision and the org chart in plain language, see
   newsletter), **Pipeline Push** (sharpen list → stage outreach → draft
   replies → prep calls), and **Authority Build** (thought-leadership POV
   → social amplification). `run-play` executes one by name.
+- **Where things stand** — `baseline-audit`: the run-early starting-point
+  snapshot. Inventories what already exists (blogs, LinkedIn newsletter
+  editions, recent social posts), builds the **comprehensive master
+  list** (`06_reports/master-list.xlsx`, long-form + social), and flags
+  what's already been covered so the team doesn't duplicate it.
 - **Goals spine** — `set-marketing-goals` captures
   `00_intake/marketing-plan.md`: objectives + targets (SEO/GEO, demand
   gen, brand/authority) plus priorities and constraints.
@@ -40,6 +45,7 @@ For the full vision and the org chart in plain language, see
 | `route-request` | The single-pane entry for *doing*. Interprets plain-language intent → matches a named play (or an ad-hoc plan from the role registry) → auto-runs the internal/reversible steps → **stops at the first audience-facing gate.** Never approves/publishes/sends/posts. |
 | `run-play` | The play-execution engine. Runs a named play's AUTO steps by dispatching the specialist skills, then stops at the first GATED step. Use when you name a play ("run the SEO/GEO engine"). |
 | `team-tick` | The *scheduled* proactive planner (opt-in, weekly). Self-initiated counterpart to `route-request`: assesses goals, picks the biggest gap, auto-runs the matching play's safe steps, stops at the gate, and notifies you. Holds off when your queue is already deep. Off by default — enable via `rockstarr-infra:set-team-autopilot`. |
+| `baseline-audit` | The run-early "where things stand" snapshot. Dispatches specialist discovery (blogs, LinkedIn newsletter editions, recent social posts), backfills the canonical publish log, then builds the comprehensive master list (`06_reports/master-list.xlsx`, long-form + social) + a duplicate-awareness summary. Read-only discovery; publishes nothing. Usually a new client's first move. |
 | `set-marketing-goals` | Capture / refresh the goals spine (`00_intake/marketing-plan.md`). Strategic counterpart to `capture-stack`. Writes only that file. |
 | `team-report` | The read-only single pane. Reads goals + role registry + each function's outputs; writes one report to `06_reports/team/`. Strictly read-only. |
 
@@ -59,6 +65,9 @@ publishing stay your decisions.
 
 ## How to use it
 
+- **First, for a new client:** run `baseline-audit` to inventory what
+  already exists and build the master list — so planning starts from
+  reality and the team doesn't duplicate content.
 - **At onboarding:** run `set-marketing-goals` after the profile + stack
   are captured, so the team has goals to work toward.
 - **To get things moving:** "get us ranking" / "grow my pipeline" runs

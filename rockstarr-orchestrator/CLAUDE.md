@@ -42,7 +42,7 @@ The line is enforced per-step in each play (AUTO vs GATED tags).
 
 ## Skill groupings (Phase A + B + C)
 
-Five skills:
+Six skills:
 
 1. **`set-marketing-goals`** (A) — captures the goals spine
    (`00_intake/marketing-plan.md`). Counterpart to `capture-stack`.
@@ -60,11 +60,32 @@ Five skills:
    play's AUTO steps via `run-play`, STOPS at the gate, and notifies the
    founder. Opt-in (`team_autopilot`, default off), with backpressure so
    it never floods the queue.
+6. **`baseline-audit`** — the run-early "where things stand" snapshot.
+   Dispatches specialist discovery across channels (blogs via
+   `master-list-blog-audit`; `inventory-linkedin-newsletter`;
+   `inventory-social`), each backfilling the canonical publish log, then
+   builds the **comprehensive, orchestrator-owned master list**
+   (`06_reports/master-list.xlsx`, long-form + social) via its bundled
+   `scripts/write_master_list_xlsx.py`, plus a duplicate-awareness
+   summary. Read-only discovery + records already-public content =
+   AUTO; it publishes/posts nothing. The first plugin script the
+   orchestrator owns.
 
 Plus references: `role-registry.md` (the org chart) and `plays/` (the
 named play library + the AUTO/GATED execution contract in
 `plays/README.md`). All skills read the registry; `route-request`,
 `run-play`, and `team-tick` read `plays/`.
+
+The **master list is orchestrator-owned** as of `baseline-audit`: it's a
+cross-function inventory (long-form + social), so it belongs to the team
+lead, not to one specialist. The publish log (infra) stays canonical;
+`master-list.xlsx` is its comprehensive export.
+`rockstarr-content:master-list-create` is **deprecated** — it now
+redirects here (a thin pointer; builds nothing), so there's one master
+list. The discovery skills
+(`master-list-blog-audit`, `inventory-linkedin-newsletter`,
+`inventory-social`) live in the specialists (channel-crawling is their
+domain); the lead only dispatches them and assembles the workbook.
 
 The schedule wiring lives in **`rockstarr-infra`**, not here:
 `set-team-autopilot` (the on/off switch), `scaffold-client` (registers

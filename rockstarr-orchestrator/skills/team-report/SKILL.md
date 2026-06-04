@@ -75,7 +75,11 @@ One report to `/rockstarr-ai/06_reports/team/team-report_[YYYY-MM-DD].md`
    this goal," not a metrics dashboard. Flag that distinction.
 5. **Flags** — anything stuck or risky: `_errors.md` entries, stale
    pending approvals, a thinning SEO backlog, an outreach cap nearly
-   hit, autopilot blocked on an unapproved gate.
+   hit, autopilot blocked on an unapproved gate. **Also flag if no
+   baseline exists** — if there's no `06_reports/master-list.xlsx`, the
+   team hasn't inventoried what already exists; recommend running
+   `baseline-audit` first (it's one of the first things a new client
+   should do).
 6. **Suggested next moves** — a short, advisory list ("approve the 3
    blog drafts," "refresh the backlog — 2 items left," "the calendar is
    waiting"). **Advisory only** — this skill does not act on them.

@@ -42,12 +42,16 @@ See `plays/README.md` for the execution contract.
 
 - **Plugin:** `rockstarr-orchestrator`
 - **Owns:** the goals spine (`00_intake/marketing-plan.md`), the
-  cross-role view, the founder's single pane, and the play library
-  (`plays/`).
+  cross-role view, the founder's single pane, the play library
+  (`plays/`), and the **comprehensive master list**
+  (`06_reports/master-list.xlsx`, long-form + social) — the
+  cross-channel inventory of what already exists.
 - **Skills:** `set-marketing-goals` (capture/refresh goals),
   `team-report` (read-only unified status), `route-request`
   (plain-language single pane → play), `run-play` (execute a named
-  play), `team-tick` (the scheduled proactive weekly planner — Phase C).
+  play), `team-tick` (the scheduled proactive weekly planner — Phase C),
+  `baseline-audit` (the run-early "where things stand" snapshot that
+  builds the master list).
 - **DOES (Phase B+C):** interpret intent (on request) or assess goals
   (on a weekly schedule), sequence specialists, and auto-run the AUTO
   (internal, reversible) steps of a play. The schedule is additive and
@@ -60,8 +64,10 @@ See `plays/README.md` for the execution contract.
 
 - **Plugins:** `rockstarr-content`
 - **Owns:** SEO/GEO strategy + site audits; long-form drafting (blog,
-  thought leadership, newsletters, case studies); the content master
-  list; the content autopilot (`plan-month`, `content-loop`).
+  thought leadership, newsletters, case studies); the content autopilot
+  (`plan-month`, `content-loop`); and baseline channel discovery
+  (`master-list-blog-audit` for live blogs, `inventory-linkedin-newsletter`
+  for newsletter editions) that backfills the publish log.
 - **Outcome area:** organic visibility + AI-search citation
   (SEO/GEO), content authority.
 - **Where its work lives (for roll-up):**
@@ -70,7 +76,9 @@ See `plays/README.md` for the execution contract.
   - `02_inputs/content-topics_*.md`, `02_inputs/content-calendar_*.md`
   - `03_drafts/content/` (pending drafts + outlines)
   - `05_published/_publish.log` + `05_published/blog|email|...`
-  - `06_reports/master-list-of-content.xlsx`
+  - (the comprehensive master list, `06_reports/master-list.xlsx`, is
+    built + owned by the Team Lead via `baseline-audit` — Content & SEO
+    feeds it via blog + LinkedIn-newsletter discovery)
 - **Key handoffs:** approved long-form → Brand & Social (repurpose,
   LinkedIn newsletter) and → Demand Gen (proof assets for outreach/reply).
 
@@ -79,7 +87,9 @@ See `plays/README.md` for the execution contract.
 - **Plugins:** `rockstarr-social` (+ the content→LinkedIn-newsletter
   authority handoff)
 - **Owns:** short-form social, weekly batches, LinkedIn presence +
-  engagement (polls, page-invite, comment-check), Publer export.
+  engagement (polls, page-invite, comment-check), Publer export, and
+  recent-social inventory for the baseline (`inventory-social`) that
+  backfills the publish log.
 - **Outcome area:** brand authority + engagement.
 - **Where its work lives:**
   - `03_drafts/social/` (weekly batches + per-post drafts)
