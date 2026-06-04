@@ -32,6 +32,7 @@ depend on files produced by these skills.
 | `publish-log`               | Record a shipped output in `05_published/<channel>/` for metrics review.                                                                                         |
 | `request-support`           | Draft + send a support email to `ai_support@rockstarrandmoon.com` on client approval.                                                                            |
 | `set-content-autopilot`     | One-prompt switch for scheduled content production: flips `stack.md.content_autopilot` and registers/removes the `content-loop` (daily) + `plan-month` (monthly) tasks to match, reusing scaffold-client's canonical specs. `on` / `off` / `status`. OFF is immediate (the drivers check the flag at runtime); ON needs a content cadence. Doesn't change cron times or draft/approve/publish. |
+| `set-team-autopilot`        | One-prompt switch for the orchestrator's proactive weekly planner: flips `stack.md.team_autopilot` and registers/removes the `team-tick` (weekly) task, reusing scaffold-client's canonical spec. `on` / `off` / `status`. **Opt-in / off by default**, additive to the content/approval crons. OFF is immediate (the `team-tick` skill checks the flag at runtime); ON needs a `marketing-plan.md` and `rockstarr-orchestrator` installed. Doesn't change the cron time or plan/draft/approve/publish. |
 | `approvals-digest`          | Daily 6 am cross-bot email to the client listing items pending approval, sorted most-recent first, with `claude://` deep-links per item. Silent on empty days.    |
 | `approvals-backlog-alert`   | Weekly Monday 8 am email to the client's Rockstarr strategist when pending count exceeds `[approvals].strategist_alert_threshold` (default 25). Silent under it. |
 | `notify-reply-ready`        | Urgent email to the client when an outreach reply lands and a draft is staged. Per-reply card with lead context, inbound excerpt, classification, drafted body, and `claude://` deep-link. Routed via `notify_type=urgent`. Called by outreach `detect-replies` (batched) or `rockstarr-reply:draft-reply` (single). |
@@ -505,6 +506,17 @@ that's what we're here for.
   autopilot drivers check the flag at runtime; ON requires a content
   cadence. Lets clients turn autopilot on/off after onboarding without
   hand-editing config. Content-only — no rockstarr-content change.
+- `0.15.0` — team-autopilot wiring for the orchestrator's proactive
+  weekly planner (Phase C of the marketing-team model). Adds the
+  `set-team-autopilot` toggle skill (flips `stack.md.team_autopilot` and
+  registers/removes the one `team-tick` weekly task, reusing
+  scaffold-client's canonical spec). `scaffold-client` conditionally
+  registers `team-tick` only when `team_autopilot` is explicitly `true`
+  (default off/opt-in) and `rockstarr-orchestrator` is installed —
+  **additive**, the content/approval crons are untouched. `capture-stack`
+  adds `team_autopilot` (bool, default false) + `team_tick_cron`
+  (default Mon 7am). The `team-tick` skill itself lives in
+  `rockstarr-orchestrator`; infra only owns the scheduling.
 
 ## Backlog / future
 

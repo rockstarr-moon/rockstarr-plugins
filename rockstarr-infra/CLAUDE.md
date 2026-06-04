@@ -110,6 +110,14 @@ recurring scheduled tasks via Cowork's scheduled-tasks MCP:
   (`content_plan_cron`). **Conditional** — same gating as above
   (Phase 2). Proposes the month's topics + a provisional calendar for
   the human to edit and approve; never approves, drafts, or publishes.
+- **Weekly, Monday 7 am local** → `rockstarr-orchestrator:team-tick`
+  (`team_tick_cron`). **Conditional + opt-in** — only wired when
+  `stack.md.team_autopilot` is explicitly `true` (default false/absent)
+  AND `rockstarr-orchestrator` is installed. **Additive** — it does not
+  replace the content/approval crons. The orchestrator's proactive
+  weekly planner: assesses goals, runs the priority play's safe steps,
+  stops at the approval gate, notifies the founder. Never approves or
+  publishes.
 
 `notify-reply-ready` is event-driven, not scheduled — it fires from
 the outreach plugins' `detect-replies` runs or directly from
@@ -129,6 +137,15 @@ reusing scaffold-client's canonical specs (single source of truth). OFF
 is effective immediately regardless of the tasks because both autopilot
 drivers check the flag at runtime; ON requires a content cadence. It
 does not change cron times (that's `capture-stack`).
+
+**Toggling team autopilot after onboarding.** `set-team-autopilot`
+(0.15.0) is the sibling switch for the orchestrator's proactive weekly
+planner: it flips `stack.md.team_autopilot` AND registers/removes the
+one `team-tick` task, reusing scaffold-client's canonical spec. Team
+autopilot is **opt-in / off by default** and **additive** (independent
+of the content/approval crons). OFF is immediate (the `team-tick` skill
+checks the flag at runtime); ON requires a `marketing-plan.md` to exist.
+Does not change the cron time (that's `capture-stack`'s `team_tick_cron`).
 
 If you touch `scaffold-client`, verify these tasks still register
 correctly. Re-running `scaffold-client` is supposed to be idempotent

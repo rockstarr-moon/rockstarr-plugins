@@ -292,6 +292,8 @@ exception.
 | `content_autopilot`              | boolean | `true`  | Should the daily content-loop produce drafts on schedule (parked at the human approval gate), or do you prefer to kick off each piece manually? Default on when any content cadence is set.                  |
 | `content_loop_cron`              | cron    | `"30 5 * * *"` | When the daily content-loop tick runs (client-local). Default 5:30am — just before the 6am approvals digest. Only used when `content_autopilot` is on and a content cadence is set.                |
 | `content_plan_cron`              | cron    | `"0 6 1 * *"`  | When the monthly plan-month tick runs (client-local). Default 6am on the 1st — proposes the month's topics + a provisional calendar for approval. Only used when `content_autopilot` is on and a content cadence is set. |
+| `team_autopilot`                 | boolean | `false` | Should the orchestrator proactively plan each week (auto-run the highest-priority play's safe steps, parked at the approval gate, then notify you)? **Off by default — opt-in.** Requires `rockstarr-orchestrator` installed and a marketing-plan set. Toggle later via `set-team-autopilot`. Additive to the content/approval crons.       |
+| `team_tick_cron`                 | cron    | `"0 7 * * 1"`  | When the weekly orchestrator team-tick fires (client-local). Default Monday 7am — start of week, after the daily content tick/digest. Only used when `team_autopilot` is on.                                              |
 
 Rules:
 

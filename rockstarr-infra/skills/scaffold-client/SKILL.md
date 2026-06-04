@@ -260,6 +260,35 @@ Create these directories and placeholder files under the workspace root:
    proposes a calendar and stops at the approval gate; `content-loop`
    produces drafts and stops at the approval gate.
 
+   **Team autopilot (conditional — opt-in, OFF by default):** the
+   orchestrator's proactive weekly planner. Register it **only when
+   `stack.md.team_autopilot` is explicitly `true`** (the default is
+   `false`/absent, so normally this task is NOT created at scaffold —
+   the founder opts in later via `rockstarr-infra:set-team-autopilot`).
+   This task is **additive** — it does not replace the content or
+   approval crons above. Same idempotent check (list first; never stomp
+   operator edits). Also requires `rockstarr-orchestrator` to be
+   installed; skip it if the client doesn't have that plugin.
+
+   ```
+   taskName       = "team-tick"
+   cronExpression = stack.md.team_tick_cron        # default "0 7 * * 1"
+                    # Monday 7:00 am local — start of week, after the
+                    # daily content-loop/digest, so the lead's proposals
+                    # are waiting when the founder opens the week.
+   prompt         = "Run the team-tick skill in rockstarr-orchestrator.
+                    Assess progress vs the marketing-plan, pick the
+                    single biggest goal gap, auto-run the matching play's
+                    safe steps, and STOP at the first approval gate; then
+                    notify the founder. Do not approve, publish, send, or
+                    post. If team_autopilot is off or no marketing-plan
+                    exists, exit quietly."
+   ```
+
+   Skip the `team-tick` task whenever `team_autopilot` is not `true`.
+   It never approves or publishes — it runs internal/reversible play
+   steps and stops at the gate (see `rockstarr-orchestrator:team-tick`).
+
    In the output summary, note for each task: created vs.
    already-existed, the resolved cron, and the local time it
    maps to. This is the only signal the operator gets that the
