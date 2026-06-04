@@ -13,37 +13,65 @@ single pane. It is the cross-role analog of `rockstarr-ops`, which is
 already a pure orchestrator for sales-ops — same pattern, whole-team
 scope.
 
-**Core invariant: it orchestrates, it does not perform.** It never
-drafts, sends, posts, publishes, or mutates CRM records, and it never
-approves. Those are the specialists' skills (gated by humans). If you
-find yourself adding a "do the work" step here, it belongs in the role
-plugin, not the lead.
+**Core invariant: it orchestrates by dispatching specialists; it never
+crosses an audience-facing gate.** The lead does not itself draft, send,
+post, publish, or mutate CRM records, and it never approves. From Phase
+B it *does* sequence and auto-run the specialists' **AUTO** (internal,
+reversible) steps — but the hands-on audience-facing work and every
+gate stay with the specialists + humans. If you add a step that
+*itself* publishes/sends/approves, that's a bug; if you add a step that
+*dispatches a specialist* to do auto-side work, that's the design.
 
 ## The autonomy line (the safety contract)
 
 The whole initiative rests on one line:
 
-- **Auto (no gate):** internal, reversible, audience-never-sees-it work.
-- **Always gated:** anything audience-facing or irreversible.
+- **Auto (no gate):** internal, reversible, audience-never-sees-it work
+  — audits, strategy/backlog refreshes, ideation, and **drafting to
+  `03_drafts/`** (a draft isn't audience-facing).
+- **Always gated:** anything audience-facing or irreversible — publish,
+  outreach send/connect, social post, email, real-CRM mutation, and
+  **approval itself**.
 
-**Phase A enforces the strong form: read-only.** `team-report` only
-reads + summarizes; `set-marketing-goals` only writes the one goals
-file. Nothing executes. Later phases will let the lead *act* on the
-"auto" side of the line — but never cross it.
+**Phase A was read-only. Phase B lets the lead act on the AUTO side and
+STOP at the first GATED step** — see `references/plays/README.md` for
+the execution contract every play obeys. `team-report` and
+`set-marketing-goals` stay read-only / single-file; the *acting*
+happens only through `route-request` / `run-play` running play steps.
+The line is enforced per-step in each play (AUTO vs GATED tags).
 
-## Skill groupings (Phase A)
+## Skill groupings (Phase A + B + C)
 
-Two skills today:
+Five skills:
 
-1. **`set-marketing-goals`** — captures the goals spine
-   (`00_intake/marketing-plan.md`). The strategic counterpart to
-   `capture-stack` (which captures cadence).
-2. **`team-report`** — the read-only single pane. Reads the goals + the
-   role registry + each function's workspace outputs; writes one report
-   to `06_reports/team/`.
+1. **`set-marketing-goals`** (A) — captures the goals spine
+   (`00_intake/marketing-plan.md`). Counterpart to `capture-stack`.
+2. **`team-report`** (A) — the read-only single pane. Reads goals +
+   registry + each function's outputs; writes one report to
+   `06_reports/team/`.
+3. **`route-request`** (B) — the founder-facing single pane for *doing*:
+   interprets plain-language intent → matches a play (or an ad-hoc plan
+   from the registry) → auto-runs AUTO steps, STOPS at the first gate.
+4. **`run-play`** (B) — the play-execution engine: runs a named play's
+   AUTO steps by dispatching specialists, STOPS at the first GATED step.
+5. **`team-tick`** (C) — the *scheduled* proactive planner. The
+   self-initiated counterpart to `route-request`: on a weekly cron it
+   assesses goals, picks the single biggest gap, runs the matching
+   play's AUTO steps via `run-play`, STOPS at the gate, and notifies the
+   founder. Opt-in (`team_autopilot`, default off), with backpressure so
+   it never floods the queue.
 
-Plus `references/role-registry.md` — the org chart: functions →
-plugins → owned outcomes → output paths → handoffs. Both skills read it.
+Plus references: `role-registry.md` (the org chart) and `plays/` (the
+named play library + the AUTO/GATED execution contract in
+`plays/README.md`). All skills read the registry; `route-request`,
+`run-play`, and `team-tick` read `plays/`.
+
+The schedule wiring lives in **`rockstarr-infra`**, not here:
+`set-team-autopilot` (the on/off switch), `scaffold-client` (registers
+the `team-tick` task when opted in), and `capture-stack`
+(`team_autopilot` / `team_tick_cron`). This plugin owns the *skill* the
+task invokes; infra owns the *scheduling*, exactly as `content-loop`
+(content) is scheduled by infra.
 
 ## Where the org model lives
 
@@ -57,24 +85,37 @@ map.
 
 ## Phasing (this plugin's roadmap)
 
-- **Phase A (this version):** role registry + goals spine + read-only
-  team report. No behavior change to other plugins; nothing executes.
-- **Phase B:** founder-facing intent router + named cross-role plays.
-- **Phase C:** proactive scheduled planning, the lead owning the
-  per-role schedule (today wired by `scaffold-client`), and acting on
-  the "auto" side of the autonomy line.
+- **Phase A:** role registry + goals spine + read-only team report.
+- **Phase B:** founder-facing intent router (`route-request`) + the
+  play engine (`run-play`) + the play library (`plays/`, first play
+  `seo-geo-engine`). The lead acts on the AUTO side and stops at every
+  gate.
+- **Phase C (this version):** proactive *scheduled* planning —
+  `team-tick` initiates the priority play on a weekly cron rather than
+  waiting to be asked. **Additive** (the per-plugin crons are untouched)
+  and **opt-in** (`team_autopilot`, default off). Still never crosses a
+  gate.
 
-Don't pull Phase B/C behavior forward without the matching ticket —
-the read-only guarantee is what makes Phase A safe to ship.
+Next up (separate tickets): more plays (Content Flywheel, Pipeline Push,
+Authority Build) and, if wanted, a fuller "lead owns *all* scheduling"
+model that subsumes the per-plugin crons. Phase C deliberately did NOT
+subsume them — it sits on top.
 
 ## What's high-risk to change
 
-- **The read-only guarantee.** If `team-report` ever writes outside its
-  report file or invokes another skill, Phase A's safety claim breaks.
-- **The autonomy line.** Any future execution must classify every
-  action as auto vs gated and never auto-cross into audience-facing.
-- **The role registry's output-path map.** `team-report` depends on it;
-  when a role plugin changes where it writes, update the registry.
+- **The gate boundary.** Auto-running AUTO steps is the design;
+  *crossing a gate* (approve/publish/send/post/real-CRM) is never
+  allowed. If a play step or skill ever performs a GATED action, the
+  whole safety claim breaks. Keep AUTO/GATED tags honest in every play.
+- **`team-report` / `set-marketing-goals` staying non-acting.** Only
+  `route-request` / `run-play` act; the other two stay read-only /
+  single-file.
+- **The role registry's output-path map.** `team-report` + the plays
+  depend on it; when a role plugin changes where it writes, update it.
+- **Drafting counts as AUTO.** That's deliberate (a draft isn't
+  audience-facing) but means plays can generate content automatically —
+  keep the cadence/backlog **bounds** in `plays/README.md` enforced so a
+  play never floods the queue.
 
 ## What's safe to change
 
@@ -93,11 +134,25 @@ Bump via `/bump rockstarr-orchestrator <version>`.
 
 ## Testing
 
-No automated behavior tests (LLM-prompted). Manual: sideload, run
-`set-marketing-goals` against a fixture workspace, then `team-report`
-and confirm it (a) reads across all four functions, (b) writes only the
-report, (c) never invokes another skill or approves anything. CI checks
-skill-name uniqueness + the description/frontmatter guards only.
+No automated behavior tests (LLM-prompted). Manual against a fixture
+workspace:
+- `set-marketing-goals` → writes only `marketing-plan.md`.
+- `team-report` → reads across all four functions, writes only its
+  report, never invokes another skill or approves anything.
+- `route-request` "get us ranking" / `run-play seo-geo-engine` → runs
+  audit + strategy + bounded drafting (AUTO), then **STOPS** before
+  approve/publish; confirm it (a) dispatches the real `rockstarr-content`
+  skills, (b) respects the cadence/backlog bound on drafting, (c) never
+  approves or publishes even when told to "just do it", (d) reports the
+  pending queue + the gated steps.
+- `team-tick` → confirm it (a) exits quietly when `team_autopilot` is
+  off or no `marketing-plan.md` exists, (b) holds off (report + nudge,
+  no new work) when the approval queue is already deep — the
+  backpressure check, (c) otherwise picks ONE gap, runs ONE play's AUTO
+  steps, STOPS at the gate, and notifies, (d) never approves/publishes.
+
+CI checks skill-name uniqueness + the description/frontmatter guards
+only.
 
 ## When stuck
 

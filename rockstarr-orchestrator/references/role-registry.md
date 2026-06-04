@@ -29,18 +29,32 @@ and to roll up what each function has done.
   irreversible — publish, outreach send/connect, social post/comment,
   email, real-CRM mutation.
 
-In Phase A nothing executes — `team-report` only reads. The line is
-recorded here because later phases enforce it.
+As of **Phase B**, the lead **acts on the AUTO side**: `route-request`
+and `run-play` auto-run the internal, reversible steps of a play and
+**STOP at the first GATED step**. **Phase C** adds `team-tick` — the
+same auto-run-and-stop behavior on a weekly schedule (opt-in), with
+backpressure so it never floods the queue. In every case the lead never
+approves, publishes, sends, posts, or mutates a real CRM record.
+`team-report` and `set-marketing-goals` remain read-only / single-file.
+See `plays/README.md` for the execution contract.
 
 ## The Team Lead
 
 - **Plugin:** `rockstarr-orchestrator`
 - **Owns:** the goals spine (`00_intake/marketing-plan.md`), the
-  cross-role view, and the founder's single pane.
-- **Phase A skills:** `set-marketing-goals` (capture/refresh goals),
-  `team-report` (read-only unified status).
-- **Does NOT:** draft, send, publish, approve, or run other plugins'
-  work. Coordinates and reports.
+  cross-role view, the founder's single pane, and the play library
+  (`plays/`).
+- **Skills:** `set-marketing-goals` (capture/refresh goals),
+  `team-report` (read-only unified status), `route-request`
+  (plain-language single pane → play), `run-play` (execute a named
+  play), `team-tick` (the scheduled proactive weekly planner — Phase C).
+- **DOES (Phase B+C):** interpret intent (on request) or assess goals
+  (on a weekly schedule), sequence specialists, and auto-run the AUTO
+  (internal, reversible) steps of a play. The schedule is additive and
+  **opt-in** (`team_autopilot`, default off).
+- **Does NOT:** approve, publish, send, post, or mutate a real CRM
+  record — it STOPS at every audience-facing gate. It dispatches
+  specialists; it never does their hands-on audience-facing work itself.
 
 ## Function 1 — Content & SEO
 
