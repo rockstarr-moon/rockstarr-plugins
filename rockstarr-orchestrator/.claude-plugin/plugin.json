@@ -1,0 +1,8 @@
+{
+  "name": "rockstarr-orchestrator",
+  "version": "0.1.0",
+  "description": "Rockstarr AI marketing-team orchestrator — the team lead. Coordinates the role functions (Content & SEO, Brand & Social, Demand Gen, RevOps & Foundation) toward the client's marketing goals. Phase A: captures the goals spine (marketing-plan.md) and produces a single read-only team report — each function's activity, the consolidated approval queue, and progress vs goals. It coordinates and reports; it never drafts, sends, publishes, or approves.",
+  "author": {
+    "name": "Rockstarr & Moon"
+  }
+}
