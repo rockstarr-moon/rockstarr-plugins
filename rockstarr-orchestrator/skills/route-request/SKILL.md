@@ -35,8 +35,9 @@ approval.
    - **A play fits** (intent matches a play's `intent_match`, e.g. "get
      us ranking" → `seo-geo-engine`): confirm the match in one line,
      then run it via the **`run-play`** contract (AUTO steps in order,
-     STOP at the first GATED step). Today the available play is
-     `seo-geo-engine`.
+     STOP at the first GATED step). Available plays are listed in
+     `references/plays/README.md` (`seo-geo-engine`, `content-flywheel`,
+     `pipeline-push`, `authority-build`).
    - **No play fits, but the request maps cleanly to function work**
      (e.g. "draft this week's posts"): compose a short ad-hoc plan from
      the role registry — list the specialist skills, tag each AUTO or

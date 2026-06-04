@@ -17,8 +17,11 @@ For the full vision and the org chart in plain language, see
   my pipeline" / "what should we do this week?" The lead maps it to a
   named play, runs the internal steps, and stops at the first gate.
 - **Named plays** — `references/plays/`: reusable cross-role recipes.
-  First play: **SEO/GEO Engine** (audit → strategy/backlog → cluster
-  drafting). `run-play` executes one by name.
+  **SEO/GEO Engine** (audit → strategy/backlog → cluster drafting),
+  **Content Flywheel** (repurpose an approved piece into social + a
+  newsletter), **Pipeline Push** (sharpen list → stage outreach → draft
+  replies → prep calls), and **Authority Build** (thought-leadership POV
+  → social amplification). `run-play` executes one by name.
 - **Goals spine** — `set-marketing-goals` captures
   `00_intake/marketing-plan.md`: objectives + targets (SEO/GEO, demand
   gen, brand/authority) plus priorities and constraints.
@@ -79,8 +82,9 @@ publishing stay your decisions.
   `team-tick` runs the priority play weekly (opt-in, additive to the
   per-plugin crons), stops at the gate, and notifies you. Still never
   crosses a gate.
-- **Next:** more plays (Content Flywheel, Pipeline Push, Authority
-  Build).
+- **Plays:** SEO/GEO Engine, Content Flywheel, Pipeline Push, and
+  Authority Build — one per function. More can be added as pure
+  `references/plays/` files whenever a new pattern is worth naming.
 
 ## Install / rollout
 

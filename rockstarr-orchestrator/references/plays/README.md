@@ -81,10 +81,14 @@ approval), **Preconditions**, and **Notes/bounds**.
 | Play | Spans | What it does |
 |------|-------|--------------|
 | `seo-geo-engine` | Content & SEO | Site audit → SEO/GEO strategy + backlog → bounded cluster drafting to `03_drafts/`. Stops at the publish gate. |
+| `content-flywheel` | Content & SEO + Brand & Social | Take one approved long-form piece → repurpose into derivatives → stage the social batch → optional newsletter CTA. Stops at the approval/publish gates. |
+| `pipeline-push` | Demand Gen | Sharpen the target list → draft the campaign → stage + preview the outreach batch → draft any pending replies → prep any booked calls. Stops at every send/launch gate. |
+| `authority-build` | Content & SEO + Brand & Social | Ideate a thought-leadership POV → outline + draft the TL piece → stage social amplification (post + poll). Stops at the publish/post/engagement gates. |
 
-(More plays — Content Flywheel, Pipeline Push, Authority Build — land in
-later increments. Add a new play by dropping a file here that follows
-the schema and listing it in this table; no skill changes needed.)
+These four cover all four functions. Add a new play by dropping a file
+here that follows the schema and listing it in this table — no skill
+changes needed (`run-play`, `route-request`, and `team-tick` drive any
+play).
 
 ## How the two skills use this
 

@@ -96,10 +96,12 @@ map.
   and **opt-in** (`team_autopilot`, default off). Still never crosses a
   gate.
 
-Next up (separate tickets): more plays (Content Flywheel, Pipeline Push,
-Authority Build) and, if wanted, a fuller "lead owns *all* scheduling"
-model that subsumes the per-plugin crons. Phase C deliberately did NOT
-subsume them — it sits on top.
+Plays ship incrementally as pure additions to `plays/` (no engine
+change): `seo-geo-engine` (Phase B), `content-flywheel`, `pipeline-push`,
+`authority-build` — these four now cover all four functions. Further work
+(separate tickets): additional/variant plays as needed and, if wanted, a
+fuller "lead owns *all* scheduling" model that subsumes the per-plugin
+crons. Phase C deliberately did NOT subsume them — it sits on top.
 
 ## What's high-risk to change
 
