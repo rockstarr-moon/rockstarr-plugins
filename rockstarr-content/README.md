@@ -56,6 +56,28 @@ matching field.
   `content-calendar`, and `outline-blog` are all backlog-aware
   — strategy decides which topics matter; the monthly skills
   sequence them.
+## v0.13 — LinkedIn-newsletter inventory (baseline discovery)
+
+- **New skill: `inventory-linkedin-newsletter`.** Opens the client's
+  LinkedIn newsletter via Chrome MCP, lists already-published editions
+  (title, URL, date), diffs them against the publish log, and backfills
+  the untracked ones through `rockstarr-infra:publish-log`
+  (`format: linkedin-newsletter`). Read-only against LinkedIn — it never
+  posts or publishes; the catalog of *existing* editions, vs
+  `publish-linkedin-newsletter` which creates new ones.
+- **Feeds the orchestrator's baseline.** This is the LinkedIn-side
+  sibling of `master-list-blog-audit`; both are dispatched by
+  `rockstarr-orchestrator:baseline-audit`, the cross-channel "where
+  things stand" snapshot. The **comprehensive master list now lives in
+  `rockstarr-orchestrator`** (long-form + social); this plugin supplies
+  long-form discovery only.
+- **`master-list-create` deprecated.** With the master list moved to the
+  orchestrator, `master-list-create` is now a thin redirect to
+  `rockstarr-orchestrator:baseline-audit` (it builds nothing). One master
+  list, owned by the team lead. `master-list-blog-audit` stays as the
+  blog-side discovery (it backfills the publish log; the orchestrator
+  rebuilds the list).
+
 ## v0.12 — Scheduled content planning (autopilot, Phase 2)
 
 Phase 1 automated per-piece *drafting* off an approved calendar. Phase
@@ -392,8 +414,9 @@ drafts generated.
 | `draft-article` | REMOVED (0.5) | Deprecated v0.2 shim deleted on schedule. Any saved workflow still referencing `draft-article` returns a "not found" error and routes the user to `outline-blog` or `outline-thought-leadership` directly. |
 | `publish-linkedin-newsletter` | NEW (0.9) | Republishes an approved TL piece from `04_approved/content/` as a LinkedIn newsletter edition on the author's personal account, via Chrome MCP automation of the article editor. Gated on `linkedin_newsletters_per_month >= 1`. Carries the full editor gotcha catalog (publishing-target reset, H3 auto-list, `cmd+a` time-field wipe, Discard traps, 90-day cap) in `references/linkedin-article-formatting.md`. Three human stop-points: cover-image upload, intro-post approval (3-sentence question-led, stop-slopped), final Schedule click. Records via `rockstarr-infra:publish-log`. Account identity / newsletter name / schedule are prompted at run time (personal-account items, not stack config). |
 | `verify-linkedin-newsletter` | NEW (0.9) | Go-live check: confirms a scheduled LinkedIn newsletter edition actually posted within ~3 days of its expected date (from `content-calendar` / `_publish.log`), reads the author's newsletter on LinkedIn via Chrome MCP, reports the result to the workspace, and can alert the strategist via `rockstarr-infra:send-notification`. No ClickUp. |
-| `master-list-create` | NEW (0.10) | Generates `06_reports/master-list-of-content.xlsx` — a local Excel tracker of long-form content (Blog/Case study) and where it was reposted — FROM the canonical `05_published/_publish.log` (+ per-piece front-matter). Four canonical columns (Content type, Posted on LinkedIn newsletter, Posted in email newsletter, URL of final blog) plus Title, Published date, Slug; one row per piece via slug join. Bundled openpyxl writer (header bold+frozen, Blog/Case-study dropdown). Regenerable export, never hand-maintained — the publish log stays the source of truth. Local + per-client (no Google Drive). |
+| `master-list-create` | DEPRECATED (v0.13) | The master list moved to the orchestrator. This skill no longer builds a workbook — it redirects to `rockstarr-orchestrator:baseline-audit`, which builds the comprehensive master list (long-form + social) at `06_reports/master-list.xlsx`. Trigger phrases ("make the master list") still resolve, now as a redirect. |
 | `master-list-blog-audit` | NEW (0.10) | Crawls the client's live blog sitemap (Googlebot UA, same approach as `seo-site-audit`), diffs live blog URLs against `_publish.log`/the master list, and reports untracked live blogs. Does not edit the workbook: confirmed gaps route through `rockstarr-infra:publish-log`, then `master-list-create` regenerates. Read-only against the live site; waits for operator confirmation before logging. |
+| `inventory-linkedin-newsletter` | NEW (0.13) | Opens the client's LinkedIn newsletter via Chrome MCP, lists already-published editions, diffs vs the publish log, and backfills untracked ones through `rockstarr-infra:publish-log` (`format: linkedin-newsletter`). Read-only against LinkedIn (never posts/publishes). The LinkedIn-side sibling of `master-list-blog-audit`; dispatched by `rockstarr-orchestrator:baseline-audit`. |
 | `plan-month` | NEW (0.12) | The monthly **scheduled** planning driver (autopilot Phase 2). Runs `ideate-topics` in background, auto-selects a provisional pick set (fill each lane to cadence; quick-wins + pillars first from the SEO backlog; TL kept enemy-diverse), and runs `content-calendar` in background to produce a **provisional** monthly calendar staged for approval. **Never approves/drafts/publishes** — the human edits the picks and approves; then `content-loop` drafts each piece daily. Wired by `scaffold-client` as a monthly cron (1st of month) when `content_autopilot` is on. Case studies excluded (quarterly/interview). |
 | `content-loop` | NEW (0.11) | The daily **scheduled** content driver (autopilot). Reads the approved `content-calendar`, infers each piece's state from the workspace files, and advances each due+unblocked item by ONE production step (outline on its date; draft once the outline is approved), running the drafting skills in background mode. **Stop-at-gate: stages drafts pending, never approves, never publishes.** Bounded to ~1 step/run (turn ceiling). Wired by `scaffold-client` as a daily cron when `content_autopilot` is on (default) + a content cadence is set; produced drafts surface in the next `approvals-digest`. Not autopilot-eligible: case studies (interview), ideate/calendar (human-gated), publishing (Phase 3). |
 | `publish-wp` | DEFER | WordPress publish connector. Builds when first client's stack lights up. |

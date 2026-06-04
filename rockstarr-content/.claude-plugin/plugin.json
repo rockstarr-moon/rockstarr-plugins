@@ -1,6 +1,6 @@
 {
   "name": "rockstarr-content",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "Rockstarr AI content plugin. Drafts researched blogs, thought-leadership, email and LinkedIn newsletters, case studies, and repurposed short-form in the client's approved voice, plus the SEO layer: keyword and cluster strategy and an impact-first site audit that feeds the content backlog. Every lane is cadence-gated in stack.md and routes through rockstarr-infra:approve. Drafting uses first-party knowledge only; third-party sources are cited inline, never paraphrased as the client's voice.",
   "author": {
     "name": "Rockstarr & Moon"

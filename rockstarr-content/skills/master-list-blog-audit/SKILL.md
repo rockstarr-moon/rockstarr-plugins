@@ -6,16 +6,18 @@ description: "This skill should be used when the user asks to \"audit the master
 # master-list-blog-audit
 
 Make sure every blog post live on the client's website is tracked in
-the workspace. This is the reconciliation companion to
-`master-list-create`: the create skill builds the workbook from the
-publish log; this skill checks that the log (and therefore the
-workbook) actually reflects what's live on the site.
+the workspace. This is the blog-side discovery for the master list: it
+checks that the canonical publish log reflects what's actually live on
+the site, and backfills any gaps. It runs standalone or as the blog step
+of `rockstarr-orchestrator:baseline-audit` (which builds the master list
+from the log afterward).
 
 > **The publish log is canonical — gaps are fixed there, not in the
-> workbook.** This skill never writes rows into the `.xlsx`. It surfaces
+> workbook.** This skill never writes rows into any `.xlsx`. It surfaces
 > live blogs that aren't tracked; once the operator confirms, each gets
-> logged via `rockstarr-infra:publish-log`, then `master-list-create`
-> regenerates the workbook from the now-complete log.
+> logged via `rockstarr-infra:publish-log`, then the master list
+> regenerates from the now-complete log (via
+> `rockstarr-orchestrator:baseline-audit`).
 
 ## When to run
 
@@ -40,9 +42,10 @@ Tier 1 cheap checks first:
 1. **`stack.md`** — `website_base_url`, the crawl target.
 2. **`05_published/_publish.log`** + the per-publish `blog` records —
    the tracked blog URLs (their `external_url` values).
-3. **`06_reports/master-list-of-content.xlsx`** if present — the URL of
-   final blog column, as a secondary cross-check. The publish log is
-   authoritative; the workbook is just the human view of it.
+3. **`06_reports/master-list.xlsx`** if present (the orchestrator's
+   comprehensive master list) — the URL column, as a secondary
+   cross-check. The publish log is authoritative; the workbook is just
+   the human view of it.
 
 ## Workflow
 
@@ -99,8 +102,9 @@ If there are untracked blogs, ask the operator whether to log them.
 On confirmation, for each untracked blog, call
 `rockstarr-infra:publish-log` (channel `blog`, the live URL as
 `external_url`, the publish date if determinable from the page). Then
-run `master-list-create` to regenerate the workbook from the updated
-log. The workbook is never edited directly.
+run `rockstarr-orchestrator:baseline-audit` (refresh mode) to regenerate
+the master list from the updated log. The workbook is never edited
+directly.
 
 ## What NOT to do
 
@@ -118,8 +122,10 @@ log. The workbook is never edited directly.
 
 ## Related
 
-- `rockstarr-content:master-list-create` — builds/refreshes the
-  workbook from the publish log; run it after gaps are logged.
+- `rockstarr-orchestrator:baseline-audit` — builds/refreshes the
+  comprehensive master list from the publish log; run it (refresh mode)
+  after gaps are logged. (`rockstarr-content:master-list-create` is
+  deprecated — it now redirects here.)
 - `rockstarr-infra:publish-log` — the canonical store gaps are
   resolved through.
 - `rockstarr-content:seo-site-audit` — also crawls the client sitemap

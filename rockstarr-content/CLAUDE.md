@@ -94,15 +94,25 @@ moved-out — see README):
    These are the realized members of the deferred-`publish-*`
    class. They drive a browser and keep humans in the loop for the
    cover image, the intro post, and the final Schedule click.
-7. **Content tracking (as of v0.10)** — `master-list-create`
-   generates `06_reports/master-list-of-content.xlsx` (a local
-   Excel tracker of long-form content + repost channels) FROM the
-   canonical `05_published/_publish.log` — it's a regenerable
-   export, never hand-maintained. `master-list-blog-audit` crawls
+7. **Content tracking (v0.10; master list moved out in v0.13)** —
+   `master-list-create` is **deprecated**: the master list is now a
+   comprehensive, cross-channel artifact (long-form + social) owned by
+   `rockstarr-orchestrator` (`baseline-audit` → `06_reports/master-list.xlsx`),
+   and this skill is a thin redirect there (builds nothing).
+   `master-list-blog-audit` crawls
    the client's live sitemap and reconciles it against the log,
    routing untracked live blogs back through `publish-log`. First
    skills in this plugin to emit an `.xlsx` (bundled openpyxl
    writer); the publish log stays the source of truth.
+   `inventory-linkedin-newsletter` (as of v0.13) is the LinkedIn-side
+   sibling: it opens the client's LinkedIn newsletter via Chrome MCP,
+   lists already-published editions, and backfills untracked ones
+   through `publish-log` (`format: linkedin-newsletter`). Read-only
+   against LinkedIn — it never posts or publishes. Both blog-audit and
+   this feed the orchestrator's `baseline-audit` (the cross-channel
+   "where things stand" snapshot); the comprehensive master list now
+   lives in `rockstarr-orchestrator`, this plugin just supplies
+   long-form discovery.
 8. **Scheduled production / autopilot** — `plan-month` (monthly,
    v0.12) + `content-loop` (daily, v0.11). `plan-month` is the
    monthly planning tick: it ideates in background, auto-selects a
