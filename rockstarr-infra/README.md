@@ -36,6 +36,7 @@ depend on files produced by these skills.
 | `approvals-digest`          | Daily 6 am cross-bot email to the client listing items pending approval, sorted most-recent first, with `claude://` deep-links per item. Silent on empty days.    |
 | `approvals-backlog-alert`   | Weekly Monday 8 am email to the client's Rockstarr strategist when pending count exceeds `[approvals].strategist_alert_threshold` (default 25). Silent under it. |
 | `notify-reply-ready`        | Urgent email to the client when an outreach reply lands and a draft is staged. Per-reply card with lead context, inbound excerpt, classification, drafted body, and `claude://` deep-link. Routed via `notify_type=urgent`. Called by outreach `detect-replies` (batched) or `rockstarr-reply:draft-reply` (single). |
+| `review-queue`              | NEW (0.16) — the operator's on-demand way to find, preview, and clear pending approvals. Scans `03_drafts/` for `approval_status: pending` and either lists them (each a `claude://cowork/new` deep-link that opens a focused task previewing the draft, with approve / edit / send-back) or runs a guided "walk my approvals" pass that renders each draft inline and calls `approve` per item. Approves only on explicit per-item confirmation; never auto-approves or publishes. Interactive counterpart to the daily digest + the orchestrator's `team-report` queue. |
 
 ## Folder contract
 
@@ -517,6 +518,20 @@ that's what we're here for.
   adds `team_autopilot` (bool, default false) + `team_tick_cron`
   (default Mon 7am). The `team-tick` skill itself lives in
   `rockstarr-orchestrator`; infra only owns the scheduling.
+- `0.16.0` — `review-queue` skill: the operator's on-demand way to find,
+  preview, and clear the documents waiting on them. Scans `03_drafts/`
+  for `approval_status: pending`; lists them with the digest's canonical
+  channel labels + `claude://cowork/new` deep-link (each link opens a
+  focused task that previews the draft and offers approve / edit /
+  send-back), or runs a guided "walk my approvals" inbox-zero pass that
+  renders each draft inline and calls `approve` per item. Reuses the
+  `approvals-digest` link shape (single source of truth) — and the
+  digest's per-item link was tightened to open + preview + prompt for
+  the decision so email and in-app behave the same. The interactive
+  counterpart to the daily digest and the orchestrator's read-only
+  `team-report` queue. (Note: plugins can't add native Cowork UI buttons
+  or a preview pane; the "preview" is the agent rendering the draft
+  inline in a focused task.)
 
 ## Backlog / future
 

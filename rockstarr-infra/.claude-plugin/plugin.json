@@ -1,6 +1,6 @@
 {
   "name": "rockstarr-infra",
-  "version": "0.15.0",
+  "version": "0.16.0",
   "description": "Foundation plugin every Rockstarr client install includes. Scaffolds /rockstarr-ai/, runs onboarding, generates the brand style guide, ingests the knowledge base, captures the tool stack. Owns the cross-bot approve and publish-log lifecycle and email notifications (daily approvals digest, weekly backlog alert, urgent reply-ready email). Every other Rockstarr plugin depends on this — run-onboarding is the entry point for new clients.",
   "author": {
     "name": "Rockstarr & Moon"

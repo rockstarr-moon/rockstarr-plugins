@@ -155,7 +155,9 @@ the assistant to glob for it, which fails or asks for help when
 slugs collide (v2/v3 versions are the common case).
 
 The prompt format is:
-`Show me the draft at [path_relative] for review.`
+`Open the draft at [path_relative] for review. Show it to me formatted, then let me approve, edit, or send it back.`
+(This mirrors `review-queue`'s focused-review flow — open, preview,
+then decide — so the email and the in-app queue behave the same.)
 
 where `[path_relative]` is the same path shown in the item's
 "Location:" bullet (relative to `/rockstarr-ai/`, since Cowork's
@@ -189,8 +191,8 @@ Use this structure (substituting the real values):
 ```markdown
 ## <N> thing<s> waiting on you
 
-Most recent first. Each one has a link to open it in Claude for
-review.
+Most recent first. Each one has a link to open and preview it in
+Claude, then approve, edit, or send it back.
 
 ---
 
@@ -200,7 +202,7 @@ review.
 
 <One short "what it is" line — see "Per-item context line" below>
 
-[Open in Claude to review →](claude://cowork/new?q=Show%20me%20the%20draft%20at%20<URL-encoded path_relative>%20for%20review.)
+[Open in Claude to review →](claude://cowork/new?q=Open%20the%20draft%20at%20<URL-encoded path_relative>%20for%20review.%20Show%20it%20to%20me%20formatted%2C%20then%20let%20me%20approve%2C%20edit%2C%20or%20send%20it%20back.)
 
 ---
 

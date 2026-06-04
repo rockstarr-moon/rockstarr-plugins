@@ -43,6 +43,18 @@ The plugin ships ~20 skills. They sort into five buckets:
    `approvals-backlog-alert` (weekly), `notify-reply-ready` (event).
    All three route through `_shared/send-notification/` →
    `mail.rockstarr.ai`.
+6. **Approval review (as of 0.16)** — `review-queue`: the operator's
+   on-demand, in-app way to find + preview + clear pending approvals.
+   Scans `03_drafts/` for `approval_status: pending` (same contract as
+   the digest), lists them with the digest's canonical channel labels +
+   `claude://cowork/new` deep-link shape (single source of truth — it
+   reuses the digest's, doesn't fork), or runs a guided "walk my
+   approvals" inbox-zero pass that renders each draft inline and calls
+   `approve` per item. Read-only except via `approve`; never
+   auto-approves or publishes. The interactive counterpart to the daily
+   email and the orchestrator's read-only `team-report` queue. Note:
+   plugins can't add native Cowork UI buttons or a preview pane — the
+   "preview" is the agent rendering the draft inline in a focused task.
 
 ## Critical contracts this plugin owns
 
