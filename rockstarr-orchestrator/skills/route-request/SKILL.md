@@ -41,7 +41,9 @@ approval.
    - **A foundational orchestrator skill fits** — route "where do we
      stand / what content already exists / build our master list" to
      `baseline-audit`; "set/update our goals" to `set-marketing-goals`;
-     "how's the team doing" to `team-report`. (For a brand-new client,
+     "how's the team doing" to `team-report`; "what do I need to approve
+     / show my approval queue / walk me through approvals" to
+     `rockstarr-infra:review-queue`. (For a brand-new client,
      `baseline-audit` is usually the right first move — and if no
      `06_reports/master-list.xlsx` exists yet, suggest it.)
    - **No play fits, but the request maps cleanly to function work**

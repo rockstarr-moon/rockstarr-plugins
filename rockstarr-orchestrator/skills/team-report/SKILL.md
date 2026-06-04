@@ -82,7 +82,10 @@ One report to `/rockstarr-ai/06_reports/team/team-report_[YYYY-MM-DD].md`
    should do).
 6. **Suggested next moves** — a short, advisory list ("approve the 3
    blog drafts," "refresh the backlog — 2 items left," "the calendar is
-   waiting"). **Advisory only** — this skill does not act on them.
+   waiting"). **Advisory only** — this skill does not act on them. When
+   there are pending approvals, point the founder at
+   `rockstarr-infra:review-queue` to find, preview, and clear them
+   interactively ("want to review them now?").
 
 Then print a tight chat summary (headline + the approval count + the
 top 1–2 flags) and the report path.
